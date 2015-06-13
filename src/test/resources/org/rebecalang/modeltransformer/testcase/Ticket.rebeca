@@ -1,0 +1,51 @@
+reactiveclass Customer (4) {
+  knownrebecs { Agent a; }
+  statevars { byte id; }
+  Customer(byte myId) {
+    id = myId;
+    self.try();
+  }
+  msgsrv try() {
+    a.requestTicket(id);
+  }
+  msgsrv ticketIssued() {
+    self.try() after(30);
+  }
+}
+reactiveclass Agent (4) {
+  knownrebecs {
+    TicketService ts;
+    Customer c1, c2;
+  }
+  statevars { }
+  Agent() { }
+  msgsrv requestTicket(byte id){
+    ts.requestTicket(id) deadline(200);
+  }
+  msgsrv ticketIssued(byte id) {
+    if (id == 1)
+      c1.ticketIssued();
+    else
+      c2.ticketIssued();
+  }
+}
+reactiveclass TicketService (4) {
+  knownrebecs { Agent a; }
+  statevars { int issueDelay; }
+  TicketService(int myIssueDelay) {
+    issueDelay = myIssueDelay;
+  }
+  msgsrv requestTicket(byte id) {
+    delay(issueDelay);
+    a.ticketIssued(id);
+  }
+}
+main {
+  Agent a(ts, c1, c2):();
+  TicketService ts(a):(4);
+  Customer c1(a):(1);
+  Customer c2(a):(2);
+}
+
+//    (mc initState |=t (<>("c2" hasReceived Customer-ticketIssued)) in time <= 1000 .)
+//    (mc-tctl initState |= AG ( ("c1" hasSent Customer-try) implies (AF[<= than 6] ("c" hasReceived Customer-ticketIssued)) ) .)

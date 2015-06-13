@@ -1,0 +1,58 @@
+reactiveclass Thermostat (4) {
+  knownrebecs {
+      Heater heater;
+  }
+  statevars {
+    int period;
+    int temp;
+  }
+  Thermostat(int p, int t) {
+    period = p;
+    temp = t;
+    self.checkTemp();
+  }
+  msgsrv checkTemp() {
+    if (temp >= 30)
+      heater.off() deadline(20);
+    if (temp <= 25)
+      heater.on() deadline(20);
+    self.checkTemp() after(period);
+  }
+  msgsrv changeTemp(int delta) {
+    temp = temp + delta;
+  }
+}
+
+reactiveclass Heater (5){
+  knownrebecs {
+    Thermostat thermostat;
+  }
+  statevars {
+    boolean on;
+    int delta;
+  }
+  Heater() {
+    on = false;
+    self.run();
+  }
+  msgsrv on() {
+    delay(2);
+    on = true;
+  }
+  msgsrv off() {
+    delay(2);
+    on = false;
+  }
+  msgsrv run() {
+    delta = ?(1,2,3);
+    if (on == false)
+      delta = -1 * delta;
+    thermostat.changeTemp(delta);
+    self.run() after(10);
+  }
+}
+
+main {
+  Thermostat t(h):(5, 25);
+  Heater h(t):();
+}

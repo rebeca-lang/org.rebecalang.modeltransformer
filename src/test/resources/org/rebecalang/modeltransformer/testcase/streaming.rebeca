@@ -1,0 +1,167 @@
+reactiveclass Server(5) {
+   
+    knownrebecs { }
+   
+    statevars {
+        boolean busy;
+        int mediaTime;
+        Client currentClient;     
+
+	Server next;
+    	boolean isLast;
+    }
+   
+Server(int mt, Server nxt, boolean last) {
+//Server(int mt, boolean last) {
+    busy = false;
+    mediaTime = mt;
+    next = nxt;
+    isLast = last;
+}
+
+msgsrv stream(ReqHandler h, Client c) {
+    if (!busy) {
+        busy = true;
+        c.streaming_start();
+        currentClient = c;
+        self.streaming_done() after(mediaTime);
+        h.streaming_start();
+    }
+}
+
+msgsrv are_you_free(ReqHandler h) {
+    if (!isLast)
+        next.are_you_free(h);
+    if (!busy)
+        h.i_am_free(self);
+}
+
+msgsrv streaming_done()
+{
+    busy = false;
+}
+
+}
+
+reactiveclass ServicePool (5){
+    knownrebecs {
+    Server last;
+}
+   
+    statevars {    
+    Server head;
+}
+   
+    ServicePool() {
+    head = last;
+}
+   
+msgsrv find_free_server(ReqHandler h) {
+    head.are_you_free(h);
+}
+
+msgsrv create_server() {
+    head = new Server():(200, head, false);
+}
+}
+
+reactiveclass ReqHandler(5) {
+
+knownrebecs {
+    ServicePool sp;
+    Client client;
+}
+
+statevars{
+    boolean done;
+    boolean waitingForStream;
+    int noResponseDelay;
+    int waitForServer;
+
+}
+
+ReqHandler(int noRD, int wFS) {
+    done = false;
+    noResponseDelay = noRD ;
+    waitForServer = wFS ;
+    self.start_req() ;
+}
+
+msgsrv start_req()
+{
+	sp.find_free_server(self);
+	self.time_out() after(noResponseDelay);
+}
+
+msgsrv i_am_free(Server s) {
+
+    if (waitingForStream)
+        self.i_am_free(s);
+       
+    else
+        if (!done)
+            {
+                waitingForStream = true;
+                self.time_out() after(waitForServer);
+                s.stream(self,client);
+            }
+}
+
+msgsrv streaming_start() {
+    done = true;
+}
+
+msgsrv time_out() {
+    if(waitingForStream)
+    {
+        waitingForStream = false;   
+    }
+    else
+        if (!done) {
+            sp.create_server();
+            self.start_req();
+        }
+}
+}
+
+reactiveclass Client (3){
+   
+    knownrebecs{
+        ServicePool sp;
+    }
+
+    statevars{
+        ReqHandler handler;
+        int failures;
+        int requestInterval;
+    }
+   
+Client(int reqInt) {
+    failures = 0;
+    requestInterval = reqInt;
+    self.make_request();
+}
+
+msgsrv make_request() {
+    if (failures < 3) {
+      	handler = new ReqHandler(self, sp):(self, sp,15,5);
+        self.make_request() after(requestInterval);
+    }
+}
+
+msgsrv fail() {
+    failures = failures + 1;
+}
+
+msgsrv streaming_start() {  }
+
+}
+
+main {
+Server s():(200,null,true);
+ServicePool sp(s):();
+
+Client c1(sp):(300);
+Client c2(sp):(300);
+Client c3(sp):(300);
+}

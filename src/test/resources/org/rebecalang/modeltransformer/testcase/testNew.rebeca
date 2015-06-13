@@ -1,0 +1,57 @@
+
+reactiveclass Creator(10) {
+	
+		knownrebecs {
+		}
+		
+		statevars {
+			byte timer;
+			boolean a; 
+			Killer killer, killer2;
+		}
+		
+		Creator(byte t, Killer k1, Killer k2)
+		{
+			killer = k1;
+			killer2 = k2;
+			timer = t;
+			self.CreateKiller();
+		}
+		
+		msgsrv CreateKiller()
+		{
+			delay(timer);
+			//killer = new Killer(self):(5);
+		}			
+}
+
+reactiveclass Killer(10) {
+	
+		knownrebecs {
+			Creator creator;
+		}
+		
+		statevars {
+			byte timer;
+		}
+		
+		Killer(byte timer2)
+		{
+			timer = timer2;
+			self.KillCreator();
+		}
+	
+		msgsrv KillCreator()
+		{
+			delay(timer);
+			//delete creator;
+		}		
+}	
+	
+main 
+{
+	Creator creator():(temp,temp2,5);
+	Killer temp(creator):(4);
+	Killer temp2(creator):(4);
+}
+
