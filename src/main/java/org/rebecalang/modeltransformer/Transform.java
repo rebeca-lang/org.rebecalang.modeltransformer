@@ -18,6 +18,7 @@ import org.rebecalang.compiler.utils.ExceptionContainer;
 import org.rebecalang.modeltransformer.maude.Rebeca2MaudeModelTransformer;
 
 public class Transform {
+	@SuppressWarnings("static-access")
 	public static void main(String[] args) {
 		CommandLineParser cmdLineParser = new GnuParser();
 		Options options = new Options();
