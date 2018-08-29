@@ -12,15 +12,17 @@ public class TimedRebecaToRealTimeMaude {
 //				"--source", base + "/thermostat.rebeca",
 //				"--source", base + "/prot-802-11.rebeca",
 //				"--source", base + "/sensornetwork2.rebeca",
-				"--source", base + "/ts2.rebeca",
-				"-e", "TimedRebeca",
-				"-v", "2.2",
-				"-o", "ts2",
+				"--source", base + "/phils.rebeca",
+				"-e", "CoreRebeca",
+				"-v", "2.1",
+				"-o", "phils",
 //				"-o", "thermostat",
-				"-t", "RTMaude"
+//				"-t", "RTMaude",
+				"-t", "akka",
 		};
 		
 		try {
+//			Transform.main(new String[0]);
 			Transform.main(parameters);
 		} catch (Exception e) {
 			e.printStackTrace();

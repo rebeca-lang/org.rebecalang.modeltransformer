@@ -15,6 +15,7 @@ import org.apache.commons.cli.ParseException;
 import org.rebecalang.compiler.utils.CodeCompilationException;
 import org.rebecalang.compiler.utils.CompilerFeature;
 import org.rebecalang.compiler.utils.ExceptionContainer;
+import org.rebecalang.modeltransformer.akka.Rebeca2AKKATransformer;
 import org.rebecalang.modeltransformer.maude.Rebeca2MaudeModelTransformer;
 
 public class Transform {
@@ -133,8 +134,23 @@ public class Transform {
 
 			if (commandLine.hasOption("target")) {
 				String target = commandLine.getOptionValue("target");
-				if (target.equals("RTMaude")) {
+				if (target.equalsIgnoreCase("RTMaude")) {
 					Rebeca2MaudeModelTransformer.getInstance().transformModel(rebecaFile,
+							destination, compilerFeatures, analysisFeatures,
+							commandLine);
+					container = Rebeca2MaudeModelTransformer.getInstance()
+							.getExceptionContainer();
+				} else if (target.equalsIgnoreCase("akka")) {
+					if (compilerFeatures.contains(CompilerFeature.TIMED_REBECA) ||
+							compilerFeatures.contains(CompilerFeature.PROBABILISTIC_REBECA)) {
+						System.out.println("Rebeca to Akka transformer only works for Core Rebeca models.");
+						return;
+					}
+					if (compilerFeatures.contains(CompilerFeature.CORE_2_0)) {
+						System.out.println("Rebeca to Akka transformer works for Rebeca core 2.1 or upper.");
+						return;						
+					}
+					Rebeca2AKKATransformer.getInstance().transformModel(rebecaFile,
 							destination, compilerFeatures, analysisFeatures,
 							commandLine);
 					container = Rebeca2MaudeModelTransformer.getInstance()

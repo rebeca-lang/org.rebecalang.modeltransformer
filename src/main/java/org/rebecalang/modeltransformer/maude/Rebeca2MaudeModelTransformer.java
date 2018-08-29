@@ -36,15 +36,15 @@ public class Rebeca2MaudeModelTransformer {
 			CommandLine commandLine) {
 
 		RebecaCompiler rebecaCompiler = new RebecaCompiler();
-		this.container = new ExceptionContainer();
+		this.container = rebecaCompiler.getExceptionContainer();
 
 		RebecaModel rebecaModel = rebecaCompiler.compileRebecaFile(rebecaFile,
-				compilerFeatures, container);
+				compilerFeatures).getFirst();
 		if (!container.getExceptions().isEmpty()) {
 			return;
 		}
 		AbstractModelTransformer modelTransformer = null;
-		rebecaModel = rebecaCompiler.compileRebecaFile(rebecaFile, compilerFeatures, container);
+		rebecaModel = rebecaCompiler.compileRebecaFile(rebecaFile, compilerFeatures).getFirst();
 		if (!container.getExceptions().isEmpty()) {
 			return;
 		}
