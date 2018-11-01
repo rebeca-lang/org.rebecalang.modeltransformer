@@ -17,6 +17,7 @@ import org.rebecalang.compiler.utils.CompilerFeature;
 import org.rebecalang.compiler.utils.ExceptionContainer;
 import org.rebecalang.modeltransformer.akka.Rebeca2AKKATransformer;
 import org.rebecalang.modeltransformer.maude.Rebeca2MaudeModelTransformer;
+import org.rebecalang.modeltransformer.ros.Rebeca2ROSModelTransformer;
 
 public class Transform {
 	@SuppressWarnings("static-access")
@@ -140,6 +141,12 @@ public class Transform {
 							commandLine);
 					container = Rebeca2MaudeModelTransformer.getInstance()
 							.getExceptionContainer();
+				}else if (target.equalsIgnoreCase("ROS")) {
+					if (compilerFeatures.contains(CompilerFeature.PROBABILISTIC_REBECA)) {
+						System.out.println("Rebeca to ROS transformer only works for core Rebeca and Timed Rebeca");
+					}
+					Rebeca2ROSModelTransformer.getInstance().transformModel(rebecaFile, destination, compilerFeatures, analysisFeatures, commandLine);
+					container = Rebeca2ROSModelTransformer.getInstance().getExceptionContainer();
 				} else if (target.equalsIgnoreCase("akka")) {
 					if (compilerFeatures.contains(CompilerFeature.TIMED_REBECA) ||
 							compilerFeatures.contains(CompilerFeature.PROBABILISTIC_REBECA)) {
