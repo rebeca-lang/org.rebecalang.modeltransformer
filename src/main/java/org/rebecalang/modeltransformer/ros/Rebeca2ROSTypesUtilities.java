@@ -71,7 +71,7 @@ public class Rebeca2ROSTypesUtilities {
 		}
 		Type type = arrayDeclaration.getType();
 		String arrayName = variableDeclarator.getVariableName();
-		Type arrayPrimitiveType = ((ArrayType)type).getPrimitiveType();
+		Type arrayPrimitiveType = ((ArrayType)type).getOrdinaryPrimitiveType();
 		
 		retValue +=  Rebeca2ROSTypesUtilities.getCorrespondingCppType((arrayPrimitiveType)) + " ";
 		retValue += arrayName;

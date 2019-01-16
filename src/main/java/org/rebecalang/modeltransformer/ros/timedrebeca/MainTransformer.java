@@ -8,9 +8,11 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ArrayVariableInitializer;
+import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.BaseClassDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Expression;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.FieldDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.FormalParameterDeclaration;
+import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.InterfaceDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.MainDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.MainRebecDefinition;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.MsgsrvDeclaration;
@@ -27,6 +29,7 @@ import org.rebecalang.compiler.utils.ExceptionContainer;
 import org.rebecalang.compiler.utils.Pair;
 import org.rebecalang.compiler.utils.TypesUtilities;
 import org.rebecalang.modeltransformer.AbstractExpressionTransformer;
+import org.rebecalang.modeltransformer.StatementTransformingException;
 import org.rebecalang.modeltransformer.TransformingFeature;
 import org.rebecalang.modeltransformer.ros.Rebeca2ROSTypesUtilities;
 
@@ -71,7 +74,11 @@ public class MainTransformer{
 			ReactiveClassDeclaration itsClass = null;
 			try {
 				//As the given models are compiled and verified, this statements never throws exception 
-				itsClass = TypesUtilities.getInstance().getMetaData(rebecDefinition.getType());
+				BaseClassDeclaration baseClassDeclaration = TypesUtilities.getInstance().getMetaData(rebecDefinition.getType());
+				if(baseClassDeclaration instanceof InterfaceDeclaration)
+					throw new StatementTransformingException("Rebeca to ROS transformer does not support interface definition", 
+							baseClassDeclaration.getLineNumber(), baseClassDeclaration.getCharacter());
+				itsClass = (ReactiveClassDeclaration) baseClassDeclaration;
 			} catch (CodeCompilationException e) {
 				e.printStackTrace();
 			}

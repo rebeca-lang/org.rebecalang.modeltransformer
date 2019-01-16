@@ -86,13 +86,7 @@ public class ExpressionTransformer {
                     args += "arg((" + translate(expression) + ")) ";
                 }
                 if (args.equals(""))
-//                    args = "noArg";
-//                ReactiveClassDeclaration rcd = (ReactiveClassDeclaration) TransformingContext.getInstance().lookupInContext("current-reactive-class");
                 retValue = ((TermPrimary) dotPrimary.getLeft()).getName();
-//                String typeName = TypesUtilities.getTypeName(((TermPrimary) dotPrimary.getLeft()).getType());
-//                String typeName = "****" ;
-//                retValue = "(send " + typeName + "--" + ((TermPrimary) dotPrimary.getRight()).getName() +
-//                        " with " + args + " to " + (retValue.equals("self") ? "" : (/*rcd.getName() +*/ "-")) + ((TermPrimary) dotPrimary.getLeft()).getName() + ")";
                 retValue = (retValue.equals("self")) ? ("this" + '.' + ((TermPrimary) dotPrimary.getRight()).getName() + "()") :
                         ((TermPrimary) dotPrimary.getLeft()).getName() + '.' + "tell(new Messages." + knownRebecs.get(((TermPrimary) dotPrimary.getLeft()).getName()) + "." + ((TermPrimary) dotPrimary.getRight()).getName() + "(), getSelf())";
             }
@@ -103,7 +97,7 @@ public class ExpressionTransformer {
             boolean hasMoreVariable = false;
             String args = "";
             try {
-                ReactiveClassDeclaration rcd = TypesUtilities.getInstance().getMetaData(rip.getType());
+                ReactiveClassDeclaration rcd = (ReactiveClassDeclaration) TypesUtilities.getInstance().getMetaData(rip.getType());
                 if (!rcd.getStatevars().isEmpty()) {
                     args += " , ";
                     for (FieldDeclaration fd : rcd.getStatevars()) {

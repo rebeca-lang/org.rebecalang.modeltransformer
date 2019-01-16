@@ -112,7 +112,7 @@ public class CoreRebecaExpressionTransformer extends AbstractExpressionTransform
 			boolean hasMoreVariable = false;
 			String args = "";
 			try {
-				ReactiveClassDeclaration rcd = TypesUtilities.getInstance().getMetaData(rip.getType());
+				ReactiveClassDeclaration rcd = (ReactiveClassDeclaration) TypesUtilities.getInstance().getMetaData(rip.getType());
 				if (!rcd.getStatevars().isEmpty()) {
 					args += " , ";
 					for (FieldDeclaration fd : rcd.getStatevars()) {
@@ -157,7 +157,9 @@ public class CoreRebecaExpressionTransformer extends AbstractExpressionTransform
 					"nested record access expression.", 
 					dotPrimary.getLineNumber(), dotPrimary.getCharacter()));
 		} else {
-			if(TypesUtilities.getInstance().getSuperType(dotPrimary.getRight().getType()) == TypesUtilities.MSGSRV_TYPE) {
+//			TODO: Modified by Ehsan as the return vlaue type of message servers is always set to MSGSRV_TYPE
+//			if(TypesUtilities.getInstance().getSuperType(dotPrimary.getRight().getType()) == TypesUtilities.MSGSRV_TYPE) {
+			if(dotPrimary.getRight().getType() == TypesUtilities.MSGSRV_TYPE) {
 				retValue = mapToROSPublishing(dotPrimary);
 			} 
 		}

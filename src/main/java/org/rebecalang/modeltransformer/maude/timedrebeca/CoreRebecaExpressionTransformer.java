@@ -117,7 +117,7 @@ public class CoreRebecaExpressionTransformer extends AbstractExpressionTransform
 			boolean hasMoreVariable = false;
 			String args = "";
 			try {
-				ReactiveClassDeclaration rcd = TypesUtilities.getInstance().getMetaData(rip.getType());
+				ReactiveClassDeclaration rcd = (ReactiveClassDeclaration) TypesUtilities.getInstance().getMetaData(rip.getType());
 				if (!rcd.getStatevars().isEmpty()) {
 					args += " , ";
 					for (FieldDeclaration fd : rcd.getStatevars()) {
