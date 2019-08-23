@@ -45,7 +45,7 @@ public class Rebeca2AKKATransformer {
             throw compiler.getExceptionContainer();
         }
 
-        RebecaModel model = compiler.syntaxCheckRebecaFile(rebecaFile, compilerFeatures);
+        RebecaModel model = compiler.compileRebecaFile(rebecaFile, compilerFeatures).getFirst();
 
         if (model.getRebecaCode().getReactiveClassDeclaration() != null) {
             for (ReactiveClassDeclaration reactiveClass : model.getRebecaCode().getReactiveClassDeclaration()) {
