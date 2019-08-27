@@ -7,10 +7,12 @@ import com.squareup.javapoet.TypeSpec;
 
 import org.apache.commons.cli.CommandLine;
 import org.rebecalang.compiler.modelcompiler.RebecaCompiler;
+import org.rebecalang.compiler.modelcompiler.SymbolTable;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.*;
 import org.rebecalang.compiler.utils.CodeCompilationException;
 import org.rebecalang.compiler.utils.CompilerFeature;
 import org.rebecalang.compiler.utils.ExceptionContainer;
+import org.rebecalang.compiler.utils.Pair;
 import org.rebecalang.modeltransformer.TransformingFeature;
 import org.rebecalang.modeltransformer.akka.corerebeca.ExpressionTransformer;
 import org.rebecalang.modeltransformer.akka.corerebeca.ReactiveClass;
@@ -45,7 +47,7 @@ public class Rebeca2AKKATransformer {
             throw compiler.getExceptionContainer();
         }
 
-        RebecaModel model = compiler.syntaxCheckRebecaFile(rebecaFile, compilerFeatures);
+        RebecaModel model = compiler.compileRebecaFile(rebecaFile, compilerFeatures).getFirst();
 
         if (model.getRebecaCode().getReactiveClassDeclaration() != null) {
             for (ReactiveClassDeclaration reactiveClass : model.getRebecaCode().getReactiveClassDeclaration()) {
