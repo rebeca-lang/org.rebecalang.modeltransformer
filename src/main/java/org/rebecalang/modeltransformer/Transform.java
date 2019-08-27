@@ -1,7 +1,9 @@
 package org.rebecalang.modeltransformer;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.Set;
 
 import org.apache.commons.cli.CommandLine;
@@ -17,6 +19,8 @@ import org.rebecalang.compiler.utils.CompilerFeature;
 import org.rebecalang.compiler.utils.ExceptionContainer;
 import org.rebecalang.modeltransformer.akka.Rebeca2AKKATransformer;
 import org.rebecalang.modeltransformer.maude.Rebeca2MaudeModelTransformer;
+import org.rebecalang.modeltransformer.ril.Rebeca2RILTransformer;
+import org.rebecalang.modeltransformer.ril.rilinstructions.InstructionBean;
 import org.rebecalang.modeltransformer.ros.Rebeca2ROSModelTransformer;
 
 public class Transform {
@@ -162,6 +166,21 @@ public class Transform {
 							commandLine);
 					container = Rebeca2MaudeModelTransformer.getInstance()
 							.getExceptionContainer();
+				} else if (target.equalsIgnoreCase("RIL")) {
+					if (compilerFeatures.contains(CompilerFeature.TIMED_REBECA) ||
+							compilerFeatures.contains(CompilerFeature.PROBABILISTIC_REBECA)) {
+						System.out.println("Rebeca to RIL transformer only works for Core Rebeca models (for now).");
+						return;
+					}
+					if (compilerFeatures.contains(CompilerFeature.CORE_2_0)) {
+						System.out.println("Rebeca to RIL transformer works for Rebeca core 2.1 or upper.");
+						return;						
+					}
+					Rebeca2RILTransformer instance = Rebeca2RILTransformer.getInstance();
+					instance.transformModel(rebecaFile, destination, compilerFeatures,
+							analysisFeatures, commandLine);
+					Hashtable<String, ArrayList<InstructionBean>> transformedRILModel = instance.getTransformedRILModel();
+					
 				} else {
 					throw new ParseException("Unrecognized target \""
 							+ target +"\".");

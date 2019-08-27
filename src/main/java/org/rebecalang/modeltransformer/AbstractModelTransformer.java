@@ -43,7 +43,8 @@ public abstract class AbstractModelTransformer {
 		this.transformingFeaturesNames = getFeaturesNames(transformingFeatures);
 		this.compilerFeaturesNames = getFeaturesNames(compilerFeatures);
 
-		destinationLocation.mkdirs();
+		if (destinationLocation != null)
+			destinationLocation.mkdirs();
 	}
 
 	public abstract void transformModel() throws IOException;
