@@ -27,7 +27,7 @@ import org.rebecalang.modeltransformer.ros.packageCreator.MsgDirectoryCreator;
 
 
 /* ROS Node Creator */
-public class ReactiveClassTransformer{
+public class RobotClassTransformer{
 	
 	
 	public final static String NEW_LINE = "\r\n";
@@ -60,7 +60,7 @@ public class ReactiveClassTransformer{
 */
 	
 	
-	public ReactiveClassTransformer(RebecaModel rebecaModel, ReactiveClassDeclaration rc, String modelName, AbstractExpressionTransformer expressionTransformer,
+	public RobotClassTransformer(RebecaModel rebecaModel, ReactiveClassDeclaration rc, String modelName, AbstractExpressionTransformer expressionTransformer,
 			Set<CompilerFeature> cFeatures, Set<TransformingFeature> tFeatures ) {
 		this.statementTransformer = new CoreRebecaStatementTransformer(expressionTransformer, cFeatures, tFeatures);
 		this.expressionTransformer = (CoreRebecaExpressionTransformer) expressionTransformer;
@@ -422,7 +422,6 @@ public class ReactiveClassTransformer{
 			retValue += "void " + rc.getName() + "::" + messageServerTransformer.getCallbackFunctionSignature() + 
 					"{" + NEW_LINE + messageServerTransformer.getCallbackFunctionBody() + "}" + NEW_LINE + NEW_LINE;
 			}
-			
 			
 		}
 		

@@ -27,7 +27,7 @@ import org.rebecalang.modeltransformer.ros.packageCreator.MsgDirectoryCreator;
 
 
 /* ROS Node Creator */
-public class ReactiveClassTransformer{
+public class ControllerClassTransformer{
 	
 	
 	public final static String NEW_LINE = "\r\n";
@@ -46,7 +46,6 @@ public class ReactiveClassTransformer{
 	private Map <Pair<String, String>, String> methodCalls = new HashMap<Pair<String, String>, String>();
 	
 	private String nodeName;
-	
 	private String nodePrivateFields;
 	private String nodePublishersDefinitions;
 	private String nodePublishersCreation;
@@ -60,7 +59,7 @@ public class ReactiveClassTransformer{
 */
 	
 	
-	public ReactiveClassTransformer(RebecaModel rebecaModel, ReactiveClassDeclaration rc, String modelName, AbstractExpressionTransformer expressionTransformer,
+	public ControllerClassTransformer(RebecaModel rebecaModel, ReactiveClassDeclaration rc, String modelName, AbstractExpressionTransformer expressionTransformer,
 			Set<CompilerFeature> cFeatures, Set<TransformingFeature> tFeatures ) {
 		this.statementTransformer = new CoreRebecaStatementTransformer(expressionTransformer, cFeatures, tFeatures);
 		this.expressionTransformer = (CoreRebecaExpressionTransformer) expressionTransformer;
@@ -105,21 +104,14 @@ public class ReactiveClassTransformer{
 			if(! msgsrv.getAnnotations().isEmpty()) {
 				for(Annotation annot: msgsrv.getAnnotations()) {
 					if (annot.getIdentifier() == "Sensor")
-						{
 						nodeSubscribersDefinitions += "ros::Subscriber " + msgsrv.getName() + "_sub_sensor" + SEMICOLON + NEW_LINE;
-						}
 					else
-						{
 						nodeSubscribersDefinitions += "ros::Subscriber " + msgsrv.getName() + "_sub" + SEMICOLON + NEW_LINE;
-						}
 				}
 			}
 			else
-			{
-			nodeSubscribersDefinitions += "ros::Subscriber " + msgsrv.getName() + "_sub" + SEMICOLON + NEW_LINE;
-			}
+				nodeSubscribersDefinitions += "ros::Subscriber " + msgsrv.getName() + "_sub" + SEMICOLON + NEW_LINE;
 			
-				
 		}
 		return nodeSubscribersDefinitions;
 	}
@@ -130,29 +122,22 @@ public class ReactiveClassTransformer{
 			if(! msgsrv.getAnnotations().isEmpty()) {
 				for(Annotation annot: msgsrv.getAnnotations()) {
 					if (annot.getIdentifier() == "Sensor")
-						{
 						nodeSubscribersCreation += msgsrv.getName() + "_sub_sensor = " + 
 								"n.subscribe(" + QUOTE_MARK + rc.getName() + "/" + msgsrv.getName() + QUOTE_MARK + ", "
 													+ subscribersQueueSize +", &" + rc.getName() + "::" + 
 											msgsrv.getName() + "Callback_Sensor" + ", this)" + SEMICOLON + NEW_LINE;
-						}
 					else
-						{
-						nodeSubscribersCreation += msgsrv.getName() + "_sub_sensor = " + 
+						nodeSubscribersCreation += msgsrv.getName() + "_sub = " + 
 								"n.subscribe(" + QUOTE_MARK + rc.getName() + "/" + msgsrv.getName() + QUOTE_MARK + ", "
 													+ subscribersQueueSize +", &" + rc.getName() + "::" + 
 											msgsrv.getName() + "Callback" + ", this)" + SEMICOLON + NEW_LINE;
-						}
 				}
 			}
 			else
-			{
-			nodeSubscribersCreation += msgsrv.getName() + "_sub_sensor = " + 
-					"n.subscribe(" + QUOTE_MARK + rc.getName() + "/" + msgsrv.getName() + QUOTE_MARK + ", "
-										+ subscribersQueueSize +", &" + rc.getName() + "::" + 
-								msgsrv.getName() + "Callback" + ", this)" + SEMICOLON + NEW_LINE;
-			}
-			
+				nodeSubscribersCreation += msgsrv.getName() + "_sub = " + 
+						"n.subscribe(" + QUOTE_MARK + rc.getName() + "/" + msgsrv.getName() + QUOTE_MARK + ", "
+											+ subscribersQueueSize +", &" + rc.getName() + "::" + 
+									msgsrv.getName() + "Callback" + ", this)" + SEMICOLON + NEW_LINE;
 				
 			}
 		return nodeSubscribersCreation;
@@ -330,6 +315,7 @@ public class ReactiveClassTransformer{
 			}
 			
 			
+			
 		}
 		
 		headerFileContent += "private:" + NEW_LINE;
@@ -457,7 +443,7 @@ public class ReactiveClassTransformer{
 		}
 	}
 
-
+	
 	public void transformReactiveClass() {
 		if(! rc.getAnnotations().isEmpty()) {
 			for(Annotation annot: rc.getAnnotations()) {

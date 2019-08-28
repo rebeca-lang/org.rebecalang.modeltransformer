@@ -231,6 +231,41 @@ public class CoreRebecaExpressionTransformer extends AbstractExpressionTransform
 			}
 			retValue += ")";
 		}
+		//To support movement in ROS
+		if (retValue.compareTo("Move(1,0)")==0)
+		{
+			//ROSCode to publish on CM_Vel topic
+		}
+		else if (retValue.compareTo("Move(0,1)")==0)
+		{
+			//ROSCode to publish on CM_Vel topic
+		}
+		else if (retValue.compareTo("Move(-1,0)")==0)
+		{
+			//ROSCode to publish on CM_Vel topic
+		}
+		else if (retValue.compareTo("Move(0,-1)")==0)
+		{
+			//ROSCode to publish on CM_Vel topic
+		}
+		else if(retValue.compareTo("Move(1,1)")==0)
+		{
+			//ROSCode to publish on CM_Vel topic
+		}
+		else if(retValue.compareTo("Move(1,-1)")==0)
+		{
+			//ROSCode to publish on CM_Vel topic
+		}
+		else if(retValue.compareTo("Move(-1,1)")==0)
+		{
+			//ROSCode to publish on CM_Vel topic
+		}
+		else if(retValue.compareTo("Move(-1,-1)")==0)
+		{
+			//ROSCode to publish on CM_Vel topic
+		}
+		
+		
 		/* to support arrays */
 		for(Expression ex: pExpression.getIndices()) {
 			retValue += "[" + translate(ex, container) + "]";
