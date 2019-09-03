@@ -52,7 +52,7 @@ public abstract class AbstractModelTransformer {
 	public StatementTransformingException doesNotSupportException(
 			String message, int line, int column) {
 		return new StatementTransformingException(
-				"This version of transformer does not supprt "
+				"This version of transformer does not support "
 						+ message + ".", line, column);
 	}
 }

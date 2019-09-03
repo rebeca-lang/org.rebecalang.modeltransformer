@@ -20,7 +20,7 @@ import org.rebecalang.compiler.utils.ExceptionContainer;
 import org.rebecalang.modeltransformer.akka.Rebeca2AKKATransformer;
 import org.rebecalang.modeltransformer.maude.Rebeca2MaudeModelTransformer;
 import org.rebecalang.modeltransformer.ril.Rebeca2RILTransformer;
-import org.rebecalang.modeltransformer.ril.rilinstructions.InstructionBean;
+import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.InstructionBean;
 import org.rebecalang.modeltransformer.ros.Rebeca2ROSModelTransformer;
 
 public class Transform {
