@@ -43,10 +43,10 @@ public class Rebeca2ROSModelTransformer{
 			return;
 		}
 		AbstractModelTransformer modelTransformer = null;
-		model = rebecaCompiler.compileRebecaFile(rebecaFile, compilerFeatures);
+		/*model = rebecaCompiler.compileRebecaFile(rebecaFile, compilerFeatures);
 		if (!container.getExceptions().isEmpty()) {
 			return;
-		}
+		}*/
 		
 		if (compilerFeatures.contains(CompilerFeature.PROBABILISTIC_REBECA)) {
 		} else {

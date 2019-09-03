@@ -78,6 +78,7 @@ public class CoreRebecaStatementTransformer extends AbstractStatementTransformer
 			return resolveExpression((Expression) statement);
 		}
 		
+		
 		container.addException(new StatementTransformingException("Unknown translation rule for type " + 
 				statement.getClass(), statement.getLineNumber(), statement.getCharacter()));
 		return "";

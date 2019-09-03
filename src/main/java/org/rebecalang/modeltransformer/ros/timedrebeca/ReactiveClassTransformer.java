@@ -102,7 +102,24 @@ public class ReactiveClassTransformer{
 	private String defineSubscribers() {
 		nodeSubscribersDefinitions = "";
 		for(MsgsrvDeclaration msgsrv: rc.getMsgsrvs()) {
+			if(! msgsrv.getAnnotations().isEmpty()) {
+				for(Annotation annot: msgsrv.getAnnotations()) {
+					if (annot.getIdentifier() == "Sensor")
+						{
+						nodeSubscribersDefinitions += "ros::Subscriber " + msgsrv.getName() + "_sub_sensor" + SEMICOLON + NEW_LINE;
+						}
+					else
+						{
+						nodeSubscribersDefinitions += "ros::Subscriber " + msgsrv.getName() + "_sub" + SEMICOLON + NEW_LINE;
+						}
+				}
+			}
+			else
+			{
 			nodeSubscribersDefinitions += "ros::Subscriber " + msgsrv.getName() + "_sub" + SEMICOLON + NEW_LINE;
+			}
+			
+				
 		}
 		return nodeSubscribersDefinitions;
 	}
@@ -110,11 +127,34 @@ public class ReactiveClassTransformer{
 	private String createSubscribers() {
 		nodeSubscribersCreation = "";
 		for(MsgsrvDeclaration msgsrv: rc.getMsgsrvs()) {
-			nodeSubscribersCreation += msgsrv.getName() + "_sub = " + 
-		"n.subscribe(" + QUOTE_MARK + rc.getName() + "/" + msgsrv.getName() + QUOTE_MARK + ", "
-							+ subscribersQueueSize +", &" + rc.getName() + "::" + 
-					msgsrv.getName() + "Callback" + ", this)" + SEMICOLON + NEW_LINE;
-		}
+			if(! msgsrv.getAnnotations().isEmpty()) {
+				for(Annotation annot: msgsrv.getAnnotations()) {
+					if (annot.getIdentifier() == "Sensor")
+						{
+						nodeSubscribersCreation += msgsrv.getName() + "_sub_sensor = " + 
+								"n.subscribe(" + QUOTE_MARK + rc.getName() + "/" + msgsrv.getName() + QUOTE_MARK + ", "
+													+ subscribersQueueSize +", &" + rc.getName() + "::" + 
+											msgsrv.getName() + "Callback_Sensor" + ", this)" + SEMICOLON + NEW_LINE;
+						}
+					else
+						{
+						nodeSubscribersCreation += msgsrv.getName() + "_sub_sensor = " + 
+								"n.subscribe(" + QUOTE_MARK + rc.getName() + "/" + msgsrv.getName() + QUOTE_MARK + ", "
+													+ subscribersQueueSize +", &" + rc.getName() + "::" + 
+											msgsrv.getName() + "Callback" + ", this)" + SEMICOLON + NEW_LINE;
+						}
+				}
+			}
+			else
+			{
+			nodeSubscribersCreation += msgsrv.getName() + "_sub_sensor = " + 
+					"n.subscribe(" + QUOTE_MARK + rc.getName() + "/" + msgsrv.getName() + QUOTE_MARK + ", "
+										+ subscribersQueueSize +", &" + rc.getName() + "::" + 
+								msgsrv.getName() + "Callback" + ", this)" + SEMICOLON + NEW_LINE;
+			}
+			
+				
+			}
 		return nodeSubscribersCreation;
 	}
 	
@@ -266,9 +306,30 @@ public class ReactiveClassTransformer{
 		headerFileContent += createNodeConstructorSignature() + SEMICOLON + NEW_LINE;
 		
 		for (MsgsrvDeclaration msgsrv : rc.getMsgsrvs()) {
+			if(! msgsrv.getAnnotations().isEmpty()) {
+				for(Annotation annot: msgsrv.getAnnotations()) {
+					if (annot.getIdentifier() == "Sensor")
+						{
+						SensorTransformer sensorTransformer =
+								new SensorTransformer(statementTransformer, msgsrv, modelName);
+						headerFileContent += "void " + sensorTransformer.getCallbackFunctionSignature() + SEMICOLON + NEW_LINE;
+						}
+					else
+						{
+						MessageServerTransformer messageServerTransformer =
+								new MessageServerTransformer(statementTransformer, msgsrv, modelName);
+						headerFileContent += "void " + messageServerTransformer.getCallbackFunctionSignature() + SEMICOLON + NEW_LINE;
+						}
+				}
+			}
+			else
+			{
 			MessageServerTransformer messageServerTransformer =
 					new MessageServerTransformer(statementTransformer, msgsrv, modelName);
 			headerFileContent += "void " + messageServerTransformer.getCallbackFunctionSignature() + SEMICOLON + NEW_LINE;
+			}
+			
+			
 		}
 		
 		headerFileContent += "private:" + NEW_LINE;
@@ -338,10 +399,31 @@ public class ReactiveClassTransformer{
 		retValue += rc.getName() + "::" + createNodeConstructorSignature() + "{" + NEW_LINE
 				 +createNodeConstructorBody() + "}" + NEW_LINE + NEW_LINE;
 		
-		for(MsgsrvDeclaration msgsrv : rc.getMsgsrvs()) {	
+		for(MsgsrvDeclaration msgsrv : rc.getMsgsrvs()) {
+			if(! msgsrv.getAnnotations().isEmpty()) {
+				for(Annotation annot: msgsrv.getAnnotations()) {
+					if (annot.getIdentifier() == "Sensor")
+						{
+						SensorTransformer sensorTransformer = new SensorTransformer(statementTransformer, msgsrv, modelName);
+						retValue += "void " + rc.getName() + "::" + sensorTransformer.getCallbackFunctionSignature() + 
+								"{" + NEW_LINE + sensorTransformer.getCallbackFunctionBody() + "}" + NEW_LINE + NEW_LINE;
+						}
+					else
+						{
+						MessageServerTransformer messageServerTransformer = new MessageServerTransformer(statementTransformer, msgsrv, modelName);
+						retValue += "void " + rc.getName() + "::" + messageServerTransformer.getCallbackFunctionSignature() + 
+								"{" + NEW_LINE + messageServerTransformer.getCallbackFunctionBody() + "}" + NEW_LINE + NEW_LINE;
+						}
+				}
+			}
+			else
+			{
 			MessageServerTransformer messageServerTransformer = new MessageServerTransformer(statementTransformer, msgsrv, modelName);
 			retValue += "void " + rc.getName() + "::" + messageServerTransformer.getCallbackFunctionSignature() + 
 					"{" + NEW_LINE + messageServerTransformer.getCallbackFunctionBody() + "}" + NEW_LINE + NEW_LINE;
+			}
+			
+			
 		}
 		
 		for(SynchMethodDeclaration method : rc.getSynchMethods()) {
@@ -379,9 +461,13 @@ public class ReactiveClassTransformer{
 	public void transformReactiveClass() {
 		if(! rc.getAnnotations().isEmpty()) {
 			for(Annotation annot: rc.getAnnotations()) {
-				if (annot.getIdentifier() == "topic")
+				if (annot.getIdentifier() == "Robot")
 					transformTopicClass();
+				if (annot.getIdentifier() == "Controller")
+					transformTopicClass();
+				
 			}
+			
 		}
 	}
 	
