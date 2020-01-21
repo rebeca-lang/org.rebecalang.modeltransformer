@@ -49,8 +49,8 @@ public class ConfigFilesCreator {
 	private String addExecutables() {
 		String retValue = "";
 		for(ReactiveClassDeclaration rc : rebecaModel.getRebecaCode().getReactiveClassDeclaration()) {
-			if(! rc.getAnnotations().isEmpty())
-				break;
+			if(!rc.getAnnotations().isEmpty())
+				continue;
 			retValue += "add_executable(" + rc.getName() + "_node" + 
 					" " + "src/" + rc.getName() + ".cpp" + ")" + NEW_LINE;
 			retValue += "add_dependencies(" + rc.getName() + "_node " + projectName + "_generate_messages_cpp)" + NEW_LINE;

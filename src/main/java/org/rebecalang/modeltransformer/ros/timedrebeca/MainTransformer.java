@@ -88,7 +88,7 @@ public class MainTransformer{
 			retValue += " pkg=" + QUOTE_MARK + modelName + QUOTE_MARK; /* The argument pkg points to the package associated with the node that is to be launched, 
 			 														we name the ROS package same as model name*/
 			
-			retValue += " type=" + QUOTE_MARK + itsClass.getName() + "_node" + QUOTE_MARK; /* type refers to the name of executable file */
+			retValue += " type=" + QUOTE_MARK + itsClass.getName()  + QUOTE_MARK; /* type refers to the name of executable file */
 
 			retValue += " name=" + QUOTE_MARK + rebecDefinition.getName() + "_node" + QUOTE_MARK; /* type refers to the name of node */
 			retValue += ">" + NEW_LINE;

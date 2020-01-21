@@ -104,7 +104,7 @@ public class ReactiveClassTransformer{
 		for(MsgsrvDeclaration msgsrv: rc.getMsgsrvs()) {
 			if(! msgsrv.getAnnotations().isEmpty()) {
 				for(Annotation annot: msgsrv.getAnnotations()) {
-					if (annot.getIdentifier() == "Sensor")
+					if (annot.getIdentifier().equals("Sensor"))
 						{
 						nodeSubscribersDefinitions += "ros::Subscriber " + msgsrv.getName() + "_sub_sensor" + SEMICOLON + NEW_LINE;
 						}
@@ -308,7 +308,7 @@ public class ReactiveClassTransformer{
 		for (MsgsrvDeclaration msgsrv : rc.getMsgsrvs()) {
 			if(! msgsrv.getAnnotations().isEmpty()) {
 				for(Annotation annot: msgsrv.getAnnotations()) {
-					if (annot.getIdentifier() == "Sensor")
+					if (annot.getIdentifier().equals("Sensor"))
 						{
 						SensorTransformer sensorTransformer =
 								new SensorTransformer(statementTransformer, msgsrv, modelName);

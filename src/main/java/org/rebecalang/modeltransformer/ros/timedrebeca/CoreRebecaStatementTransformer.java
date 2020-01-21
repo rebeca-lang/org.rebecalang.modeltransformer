@@ -86,11 +86,11 @@ public class CoreRebecaStatementTransformer extends AbstractStatementTransformer
 	
 	
 	protected String resolveBlockStatement(BlockStatement blockStatement) {
-		String retValue = "";
+		String retValue = "{";
 		for (Statement statement : blockStatement.getStatements()) {
 			retValue += resolveStatement(statement) + ";" + NEW_LINE;
 		}
-		retValue += NEW_LINE;
+		retValue += "}" + NEW_LINE;
 		return retValue;
 	}
 	

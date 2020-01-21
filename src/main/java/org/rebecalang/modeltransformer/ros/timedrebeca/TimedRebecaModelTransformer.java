@@ -44,6 +44,7 @@ public class TimedRebecaModelTransformer extends AbstractModelTransformer{
 		
 		/*nodes files */
 		for (ReactiveClassDeclaration rc: rebecaModel.getRebecaCode().getReactiveClassDeclaration()) {
+			
 			AbstractExpressionTransformer expressionTransformer = null;
 			expressionTransformer = new CoreRebecaExpressionTransformer(compilerFeatures, transformingFeatures, container, modelName, rc, rebecaModel);
 
