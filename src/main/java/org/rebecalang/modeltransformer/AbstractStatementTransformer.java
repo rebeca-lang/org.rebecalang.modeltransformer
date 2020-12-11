@@ -11,13 +11,11 @@ public abstract class AbstractStatementTransformer {
 	protected ExceptionContainer container = new ExceptionContainer();
 	protected AbstractExpressionTransformer expressionTransformer;
 	protected Set<CompilerFeature> cFeatures;
-	protected Set<TransformingFeature> tFeatures;
 
 	public AbstractStatementTransformer(AbstractExpressionTransformer expressionTranslator,
-			Set<CompilerFeature> cFeatures, Set<TransformingFeature> tFeatures) {
+			Set<CompilerFeature> cFeatures) {
 		this.expressionTransformer = expressionTranslator;
 		this.cFeatures = cFeatures;
-		this.tFeatures = tFeatures;
 	}
 	
 	public AbstractExpressionTransformer getExpressionTranslator() {

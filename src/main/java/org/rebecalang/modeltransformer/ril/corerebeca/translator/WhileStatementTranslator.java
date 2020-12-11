@@ -3,8 +3,6 @@ package org.rebecalang.modeltransformer.ril.corerebeca.translator;
 import static org.rebecalang.modeltransformer.ril.corerebeca.translator.ConditionalStatementTranslator.INVALID_JUMP_LOCATION;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
 
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Statement;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.WhileStatement;

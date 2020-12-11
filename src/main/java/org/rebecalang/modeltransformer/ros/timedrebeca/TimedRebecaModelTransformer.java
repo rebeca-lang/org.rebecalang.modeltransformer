@@ -11,7 +11,6 @@ import org.rebecalang.compiler.utils.CompilerFeature;
 import org.rebecalang.compiler.utils.ExceptionContainer;
 import org.rebecalang.modeltransformer.AbstractExpressionTransformer;
 import org.rebecalang.modeltransformer.AbstractModelTransformer;
-import org.rebecalang.modeltransformer.TransformingFeature;
 import org.rebecalang.modeltransformer.ros.packageCreator.IncludeDirectoryCreator;
 import org.rebecalang.modeltransformer.ros.packageCreator.LaunchDirectoryCreator;
 import org.rebecalang.modeltransformer.ros.packageCreator.ROSPackageCreator;
@@ -23,12 +22,10 @@ public class TimedRebecaModelTransformer extends AbstractModelTransformer{
 	@Override
 	public void prepare(String modelName, RebecaModel rebecaModel,
 			Set<CompilerFeature> compilerFeatures,
-			Set<TransformingFeature> transformingFeatures,
 			CommandLine commandLine, File destinationLocation,
 			ExceptionContainer container) {
 		super.prepare(modelName, rebecaModel, compilerFeatures,
-				transformingFeatures, commandLine, destinationLocation,
-				container); 
+				commandLine, destinationLocation, container); 
 	}
 	
 	@Override
@@ -46,11 +43,11 @@ public class TimedRebecaModelTransformer extends AbstractModelTransformer{
 		for (ReactiveClassDeclaration rc: rebecaModel.getRebecaCode().getReactiveClassDeclaration()) {
 			
 			AbstractExpressionTransformer expressionTransformer = null;
-			expressionTransformer = new CoreRebecaExpressionTransformer(compilerFeatures, transformingFeatures, container, modelName, rc, rebecaModel);
+			expressionTransformer = new CoreRebecaExpressionTransformer(compilerFeatures, container, modelName, rc, rebecaModel);
 
 			if(rc.getAnnotations().isEmpty()){
 				ReactiveClassTransformer reactiveClassTransformer =
-						new ReactiveClassTransformer(rebecaModel, rc, modelName, expressionTransformer, compilerFeatures, transformingFeatures);
+						new ReactiveClassTransformer(rebecaModel, rc, modelName, expressionTransformer, compilerFeatures);
 				reactiveClassTransformer.transformReactiveClass();
 				
 				String headerFileContent = reactiveClassTransformer.getHeaderFileContent();
@@ -65,7 +62,7 @@ public class TimedRebecaModelTransformer extends AbstractModelTransformer{
 			}
 			else {
 				ReactiveClassTransformer reactiveClassTransformer =
-						new ReactiveClassTransformer(rebecaModel, rc, modelName, expressionTransformer, compilerFeatures, transformingFeatures);
+						new ReactiveClassTransformer(rebecaModel, rc, modelName, expressionTransformer, compilerFeatures);
 				reactiveClassTransformer.transformReactiveClass();
 				reactiveClassTransformer.createMsgFiles(destinationLocation, container);
 
@@ -75,9 +72,9 @@ public class TimedRebecaModelTransformer extends AbstractModelTransformer{
 		
 		/* launch file */
 		AbstractExpressionTransformer expressionTransformer = null;
-		expressionTransformer = new CoreRebecaExpressionTransformer(compilerFeatures, transformingFeatures, container, modelName, new ReactiveClassDeclaration(), rebecaModel);
+		expressionTransformer = new CoreRebecaExpressionTransformer(compilerFeatures, container, modelName, new ReactiveClassDeclaration(), rebecaModel);
 		MainTransformer mainTransformer = new MainTransformer(modelName, rebecaModel, expressionTransformer,
-								compilerFeatures, transformingFeatures, container);
+								compilerFeatures, container);
 		String launchFileContent = mainTransformer.getLaunchFileContent();
 		LaunchDirectoryCreator launchDirCreator = new LaunchDirectoryCreator(destinationLocation, modelName, container);
 		launchDirCreator.addFile(modelName + ".launch", launchFileContent);

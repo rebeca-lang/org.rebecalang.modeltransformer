@@ -10,7 +10,6 @@ import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.RebecaModel;
 import org.rebecalang.compiler.utils.CompilerFeature;
 import org.rebecalang.compiler.utils.ExceptionContainer;
 import org.rebecalang.modeltransformer.AbstractModelTransformer;
-import org.rebecalang.modeltransformer.TransformingFeature;
 import org.rebecalang.modeltransformer.maude.timedrebeca.TimedRebecaModelTransformer;
 
 public class Rebeca2MaudeModelTransformer {
@@ -31,9 +30,7 @@ public class Rebeca2MaudeModelTransformer {
 	}
 
 	public void transformModel(File rebecaFile, File destinationLocation,
-			Set<CompilerFeature> compilerFeatures,
-			Set<TransformingFeature> transformingFeatures,
-			CommandLine commandLine) {
+			Set<CompilerFeature> compilerFeatures, CommandLine commandLine) {
 
 		RebecaCompiler rebecaCompiler = new RebecaCompiler();
 		this.container = rebecaCompiler.getExceptionContainer();
@@ -55,7 +52,7 @@ public class Rebeca2MaudeModelTransformer {
 			String modelName = rebecaFile.getName().split("\\.")[0];
 			
 			modelTransformer.prepare(modelName, rebecaModel, compilerFeatures,
-					transformingFeatures, commandLine, destinationLocation,
+					commandLine, destinationLocation,
 					container);
 		} else if (compilerFeatures
 				.contains(CompilerFeature.PROBABILISTIC_REBECA)) {

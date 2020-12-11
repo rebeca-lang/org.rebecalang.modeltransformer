@@ -28,7 +28,6 @@ import org.rebecalang.compiler.utils.Pair;
 import org.rebecalang.compiler.utils.TypesUtilities;
 import org.rebecalang.modeltransformer.AbstractExpressionTransformer;
 import org.rebecalang.modeltransformer.StatementTransformingException;
-import org.rebecalang.modeltransformer.TransformingFeature;
 import org.rebecalang.modeltransformer.ros.Utilities;
 
 
@@ -41,8 +40,8 @@ public class CoreRebecaExpressionTransformer extends AbstractExpressionTransform
 
 
 	public CoreRebecaExpressionTransformer(Set<CompilerFeature> cFeatures,
-			Set<TransformingFeature> tFeatures, ExceptionContainer container, String modelName, ReactiveClassDeclaration rc, RebecaModel rebecaModel) {
-		super(cFeatures, tFeatures, container);
+			ExceptionContainer container, String modelName, ReactiveClassDeclaration rc, RebecaModel rebecaModel) {
+		super(cFeatures, container);
 		this.modelName = modelName;
 		this.rebecaModel = rebecaModel;
 		this.rc = rc;

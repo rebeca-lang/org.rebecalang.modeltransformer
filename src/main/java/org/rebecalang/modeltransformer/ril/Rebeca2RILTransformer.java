@@ -14,7 +14,6 @@ import org.rebecalang.compiler.utils.CompilerFeature;
 import org.rebecalang.compiler.utils.ExceptionContainer;
 import org.rebecalang.compiler.utils.Pair;
 import org.rebecalang.modeltransformer.AbstractModelTransformer;
-import org.rebecalang.modeltransformer.TransformingFeature;
 import org.rebecalang.modeltransformer.ril.corerebeca.CoreRebecaModelTransformer;
 import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.InstructionBean;
 import org.rebecalang.modeltransformer.ril.timedrebeca.TimedRebecaModelTransformer;
@@ -34,7 +33,7 @@ public class Rebeca2RILTransformer {
 	}
 
 	public void transformModel(File rebecaFile, File destinationLocation, Set<CompilerFeature> compilerFeatures,
-			Set<TransformingFeature> transformingFeatures, CommandLine commandLine) {
+			CommandLine commandLine) {
 		RebecaCompiler rebecaCompiler = new RebecaCompiler();
 		this.container = new ExceptionContainer();
 		this.container = rebecaCompiler.getExceptionContainer();
@@ -42,11 +41,10 @@ public class Rebeca2RILTransformer {
 		if (!container.getExceptions().isEmpty()) {
 			return;
 		}
-		transformModel(model, compilerFeatures, transformingFeatures);
+		transformModel(model, compilerFeatures);
 	}
 
-	public void transformModel(Pair<RebecaModel, SymbolTable> model, Set<CompilerFeature> compilerFeatures,
-			Set<TransformingFeature> transformingFeatures) {
+	public void transformModel(Pair<RebecaModel, SymbolTable> model, Set<CompilerFeature> compilerFeatures) {
 
 		StatementTranslatorContainer.getInstance().setSymbolTable(model.getSecond());
 
@@ -59,13 +57,13 @@ public class Rebeca2RILTransformer {
 
 			modelTransformer = new TimedRebecaModelTransformer();
 
-			modelTransformer.prepare(null, model.getFirst(), compilerFeatures, transformingFeatures, null, null,
+			modelTransformer.prepare(null, model.getFirst(), compilerFeatures, null, null,
 					container);
 
 		} else {
 			modelTransformer = new CoreRebecaModelTransformer();
 
-			modelTransformer.prepare(null, model.getFirst(), compilerFeatures, transformingFeatures, null, null,
+			modelTransformer.prepare(null, model.getFirst(), compilerFeatures, null, null,
 					container);
 		}
 		try {

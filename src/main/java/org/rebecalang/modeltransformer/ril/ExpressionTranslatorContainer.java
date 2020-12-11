@@ -10,12 +10,6 @@ import org.rebecalang.modeltransformer.ril.corerebeca.translator.expresiontransl
 
 public class ExpressionTranslatorContainer {
 
-	public static void main(String[] args) {
-		int x = 0;
-		int y = (x--) + (x++);
-		System.out.println(y);
-	}
-
 	static ExpressionTranslatorContainer instance = new ExpressionTranslatorContainer();
 
 	private ExpressionTranslatorContainer() {
@@ -48,14 +42,6 @@ public class ExpressionTranslatorContainer {
 			AbstractExpressionTranslator expressionTranslator) {
 		translators.put(clazz, expressionTranslator);
 	}
-
-	// public SymbolTable getSymbolTable() {
-	// return symbolTable;
-	// }
-
-	// public void setSymbolTable(SymbolTable symbolTable) {
-	// this.symbolTable = symbolTable;
-	// }
 
 	public void prepare(ReactiveClassDeclaration rcd, String computedMethodName) {
 		this.setReactiveClassDeclaration(rcd);

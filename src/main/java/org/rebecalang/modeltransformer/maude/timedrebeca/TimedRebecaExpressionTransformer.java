@@ -8,14 +8,12 @@ import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.TermPrimary;
 import org.rebecalang.compiler.modelcompiler.timedrebeca.objectmodel.TimedRebecaParentSuffixPrimary;
 import org.rebecalang.compiler.utils.CompilerFeature;
 import org.rebecalang.compiler.utils.ExceptionContainer;
-import org.rebecalang.modeltransformer.TransformingFeature;
 
 public class TimedRebecaExpressionTransformer extends
 		CoreRebecaExpressionTransformer {
 
-	public TimedRebecaExpressionTransformer(Set<CompilerFeature> cFeatures,
-			Set<TransformingFeature> tFeatures, ExceptionContainer container) {
-		super(cFeatures, tFeatures, container);
+	public TimedRebecaExpressionTransformer(Set<CompilerFeature> cFeatures, ExceptionContainer container) {
+		super(cFeatures, container);
 	}
 
 	protected String translatePrimaryExpression(

@@ -2,7 +2,6 @@ package org.rebecalang.modeltransformer.ril.corerebeca.translator.expresiontrans
 
 import java.util.ArrayList;
 
-import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.BinaryExpression;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Expression;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.UnaryExpression;
 import org.rebecalang.modeltransformer.ril.ExpressionTranslatorContainer;

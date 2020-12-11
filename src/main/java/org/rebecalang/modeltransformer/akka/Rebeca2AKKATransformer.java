@@ -13,7 +13,6 @@ import org.rebecalang.compiler.utils.CodeCompilationException;
 import org.rebecalang.compiler.utils.CompilerFeature;
 import org.rebecalang.compiler.utils.ExceptionContainer;
 import org.rebecalang.compiler.utils.Pair;
-import org.rebecalang.modeltransformer.TransformingFeature;
 import org.rebecalang.modeltransformer.akka.corerebeca.ExpressionTransformer;
 import org.rebecalang.modeltransformer.akka.corerebeca.ReactiveClass;
 import org.rebecalang.modeltransformer.akka.corerebeca.UnsupportedExpressionException;
@@ -37,7 +36,7 @@ public class Rebeca2AKKATransformer {
     private File destination;
 
 	public void transformModel(File rebecaFile, File destination, Set<CompilerFeature> compilerFeatures,
-			Set<TransformingFeature> analysisFeatures, CommandLine commandLine) throws ExceptionContainer {
+			CommandLine commandLine) throws ExceptionContainer {
 		this.destination = destination;
 		
         RebecaCompiler compiler = new RebecaCompiler();

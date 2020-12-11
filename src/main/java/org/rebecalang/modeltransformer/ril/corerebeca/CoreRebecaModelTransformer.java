@@ -16,6 +16,7 @@ import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ForStatement
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Literal;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.MethodDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.MsgsrvDeclaration;
+import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.NonDetExpression;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.PlusSubExpression;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ReactiveClassDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ReturnStatement;
@@ -42,6 +43,7 @@ import org.rebecalang.modeltransformer.ril.corerebeca.translator.WhileStatementT
 import org.rebecalang.modeltransformer.ril.corerebeca.translator.expresiontranslator.BinaryExpressionTranslator;
 import org.rebecalang.modeltransformer.ril.corerebeca.translator.expresiontranslator.DotPrimaryExpressionTranslator;
 import org.rebecalang.modeltransformer.ril.corerebeca.translator.expresiontranslator.LiteralStatementTranslator;
+import org.rebecalang.modeltransformer.ril.corerebeca.translator.expresiontranslator.NonDetExpressionTranslator;
 import org.rebecalang.modeltransformer.ril.corerebeca.translator.expresiontranslator.PlusSubExpressionTranslator;
 import org.rebecalang.modeltransformer.ril.corerebeca.translator.expresiontranslator.TermPrimaryExpressionTranslator;
 import org.rebecalang.modeltransformer.ril.corerebeca.translator.expresiontranslator.UnaryExpressionTranslator;
@@ -66,6 +68,8 @@ public class CoreRebecaModelTransformer extends AbstractRILModelTransformer  {
 				new UnaryExpressionTranslator());
 		ExpressionTranslatorContainer.getInstance().registerTranslator(PlusSubExpression.class,
 				new PlusSubExpressionTranslator());
+		ExpressionTranslatorContainer.getInstance().registerTranslator(NonDetExpression.class,
+				new NonDetExpressionTranslator());
 		
 		StatementTranslatorContainer.getInstance().registerTranslator(BlockStatement.class,
 				new BlockStatementTranslator());

@@ -22,10 +22,19 @@ import org.rebecalang.modeltransformer.maude.Rebeca2MaudeModelTransformer;
 import org.rebecalang.modeltransformer.ril.Rebeca2RILTransformer;
 import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.InstructionBean;
 import org.rebecalang.modeltransformer.ros.Rebeca2ROSModelTransformer;
+import org.rebecalang.modeltransformer.solidity.Rebeca2SolidityModelTransformer;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.annotation.Configuration;
 
+@Configuration
 public class Transform {
+
 	@SuppressWarnings("static-access")
 	public static void main(String[] args) {
+		AnnotationConfigApplicationContext ctx = 
+				new AnnotationConfigApplicationContext(
+						new String[] {"org.rebecalang.compiler", "org.rebecalang.modeltransformer"});
+		
 		CommandLineParser cmdLineParser = new GnuParser();
 		Options options = new Options();
 		try {
@@ -82,8 +91,10 @@ public class Transform {
 
 			CommandLine commandLine = cmdLineParser.parse(options, args);
 
-			if (commandLine.hasOption("help"))
+			if (commandLine.hasOption("help")) {
+				ctx.close();
 				throw new ParseException("");
+			}
 			// Set Rebeca file reference.
 			File rebecaFile = new File(commandLine.getOptionValue("source"));
 
@@ -105,7 +116,10 @@ public class Transform {
 					coreVersion = CompilerFeature.CORE_2_1;
 				else if (version.equals("2.2"))
 					coreVersion = CompilerFeature.CORE_2_2;
+				else if (version.equals("2.3"))
+					coreVersion = CompilerFeature.CORE_2_3;
 				else {
+					ctx.close();
 					throw new ParseException("Unrecognized Rebeca version: "
 							+ version);
 				}
@@ -130,58 +144,79 @@ public class Transform {
 				compilerFeatures.add(CompilerFeature.PROBABILISTIC_REBECA);
 				compilerFeatures.add(CompilerFeature.TIMED_REBECA);
 			} else {
+				ctx.close();
 				throw new ParseException("Unrecognized Rebeca extension: "
 						+ extensionLabel);
 			}
 
-			Set<TransformingFeature> analysisFeatures = new HashSet<TransformingFeature>();
 			ExceptionContainer container = new ExceptionContainer();
 
 			if (commandLine.hasOption("target")) {
 				String target = commandLine.getOptionValue("target");
 				if (target.equalsIgnoreCase("RTMaude")) {
 					Rebeca2MaudeModelTransformer.getInstance().transformModel(rebecaFile,
-							destination, compilerFeatures, analysisFeatures,
-							commandLine);
+							destination, compilerFeatures, commandLine);
 					container = Rebeca2MaudeModelTransformer.getInstance()
 							.getExceptionContainer();
 				}else if (target.equalsIgnoreCase("ROS")) {
 					if (compilerFeatures.contains(CompilerFeature.PROBABILISTIC_REBECA)) {
 						System.out.println("Rebeca to ROS transformer only works for core Rebeca and Timed Rebeca");
 					}
-					Rebeca2ROSModelTransformer.getInstance().transformModel(rebecaFile, destination, compilerFeatures, analysisFeatures, commandLine);
+					Rebeca2ROSModelTransformer.getInstance().transformModel(rebecaFile, destination, compilerFeatures, commandLine);
 					container = Rebeca2ROSModelTransformer.getInstance().getExceptionContainer();
 				} else if (target.equalsIgnoreCase("akka")) {
 					if (compilerFeatures.contains(CompilerFeature.TIMED_REBECA) ||
 							compilerFeatures.contains(CompilerFeature.PROBABILISTIC_REBECA)) {
 						System.out.println("Rebeca to Akka transformer only works for Core Rebeca models.");
+						ctx.close();
 						return;
 					}
 					if (compilerFeatures.contains(CompilerFeature.CORE_2_0)) {
 						System.out.println("Rebeca to Akka transformer works for Rebeca core 2.1 or upper.");
+						ctx.close();
 						return;						
 					}
-					Rebeca2AKKATransformer.getInstance().transformModel(rebecaFile,
-							destination, compilerFeatures, analysisFeatures,
-							commandLine);
+					Rebeca2AKKATransformer.getInstance().transformModel(rebecaFile, destination, compilerFeatures, commandLine);
 					container = Rebeca2MaudeModelTransformer.getInstance()
 							.getExceptionContainer();
 				} else if (target.equalsIgnoreCase("RIL")) {
 					if (compilerFeatures.contains(CompilerFeature.TIMED_REBECA) ||
 							compilerFeatures.contains(CompilerFeature.PROBABILISTIC_REBECA)) {
 						System.out.println("Rebeca to RIL transformer only works for Core Rebeca models (for now).");
+						ctx.close();
 						return;
 					}
 					if (compilerFeatures.contains(CompilerFeature.CORE_2_0)) {
 						System.out.println("Rebeca to RIL transformer works for Rebeca core 2.1 or upper.");
+						ctx.close();
 						return;						
 					}
 					Rebeca2RILTransformer instance = Rebeca2RILTransformer.getInstance();
 					instance.transformModel(rebecaFile, destination, compilerFeatures,
-							analysisFeatures, commandLine);
+							commandLine);
 					Hashtable<String, ArrayList<InstructionBean>> transformedRILModel = instance.getTransformedRILModel();
 					
+				} else if (target.equalsIgnoreCase("SOLIDITY")) {
+					if (compilerFeatures.contains(CompilerFeature.TIMED_REBECA) ||
+							compilerFeatures.contains(CompilerFeature.PROBABILISTIC_REBECA)) {
+						System.out.println("Rebeca to Solidity transformer only works for Core Rebeca models (for now).");
+						ctx.close();
+						return;
+					}
+					if (compilerFeatures.contains(CompilerFeature.CORE_2_0)) {
+						System.out.println("Rebeca to Solidity transformer works for Rebeca core 2.1 or upper.");
+						ctx.close();
+						return;						
+					}
+					
+					Rebeca2SolidityModelTransformer rebeca2SolidityModelTransformer = 
+							ctx.getBean(Rebeca2SolidityModelTransformer.class);
+					rebeca2SolidityModelTransformer.transformModel(rebecaFile, destination, compilerFeatures,
+							commandLine);
+					//TODO remove it when all the parts are transformed to Spring DI
+					container = rebeca2SolidityModelTransformer.getExceptionContainer();
 				} else {
+					ctx.close();
 					throw new ParseException("Unrecognized target \""
 							+ target +"\".");
 				}
@@ -221,5 +256,7 @@ public class Transform {
 			HelpFormatter formatter = new HelpFormatter();
 			formatter.printHelp("transformer [options]", options);
 		}
+		
+		ctx.close();
 	}
 }

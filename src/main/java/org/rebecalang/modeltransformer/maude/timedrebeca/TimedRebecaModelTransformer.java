@@ -20,7 +20,6 @@ import org.rebecalang.compiler.utils.TypesUtilities;
 import org.rebecalang.modeltransformer.AbstractModelTransformer;
 import org.rebecalang.modeltransformer.AbstractStatementTransformer;
 import org.rebecalang.modeltransformer.TransformingContext;
-import org.rebecalang.modeltransformer.TransformingFeature;
 
 /**
  * RMC main class that creates MODERE cpp core classes and its LTL/CTL property
@@ -35,12 +34,11 @@ public class TimedRebecaModelTransformer extends AbstractModelTransformer {
 	@Override
 	public void prepare(String modelName, RebecaModel rebecaModel,
 			Set<CompilerFeature> compilerFeatures,
-			Set<TransformingFeature> transformingFeatures,
 			CommandLine commandLine, File destinationLocation,
 			ExceptionContainer container) {
 		// TODO Auto-generated method stub
 		super.prepare(modelName, rebecaModel, compilerFeatures,
-				transformingFeatures, commandLine, destinationLocation,
+				commandLine, destinationLocation,
 				container);
 
 		Velocity.addProperty("resource.loader", "class");
@@ -50,9 +48,7 @@ public class TimedRebecaModelTransformer extends AbstractModelTransformer {
 		Velocity.init();
 
 		statementTransformer = new CoreRebecaStatementTransformer(
-				new TimedRebecaExpressionTransformer(compilerFeatures,
-						transformingFeatures, container), compilerFeatures,
-				transformingFeatures);
+				new TimedRebecaExpressionTransformer(compilerFeatures, container), compilerFeatures);
 	}
 
 	@Override
@@ -72,7 +68,6 @@ public class TimedRebecaModelTransformer extends AbstractModelTransformer {
 		}
 			
 		VelocityContext context = new VelocityContext();
-		context.put("tFeatures", transformingFeatures);
 		context.put("cFeatures", compilerFeaturesNames);
 
 		// Creating .h and .cpp files of FTTSTimedModelChecker

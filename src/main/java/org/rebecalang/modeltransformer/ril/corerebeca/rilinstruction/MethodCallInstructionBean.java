@@ -45,6 +45,8 @@ public class MethodCallInstructionBean extends InstructionBean {
 		for (Object parameter: parameters) {
 			string += parameter.toString() + ", ";
 		}
+		if (functionCallResult != null)
+			string = functionCallResult + " = " + string;
 		return string + ")";
 	}
 

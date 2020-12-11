@@ -22,7 +22,6 @@ public abstract class AbstractModelTransformer {
 
 	protected ExceptionContainer container;
 	protected File destinationLocation;
-	protected Set<TransformingFeature> transformingFeatures;
 	protected Set<CompilerFeature> compilerFeatures;
 	protected Set<String> transformingFeaturesNames;
 	protected Set<String> compilerFeaturesNames;
@@ -31,16 +30,13 @@ public abstract class AbstractModelTransformer {
 
 	public void prepare(String modelName, RebecaModel rebecaModel,
 			Set<CompilerFeature> compilerFeatures,
-			Set<TransformingFeature> transformingFeatures,
 			CommandLine commandLine, File destinationLocation,
 			ExceptionContainer container) {
 		this.rebecaModel = rebecaModel;
 		this.compilerFeatures = compilerFeatures;
-		this.transformingFeatures = transformingFeatures;
 		this.destinationLocation = destinationLocation;
 		this.container = container;
 		this.modelName = modelName;
-		this.transformingFeaturesNames = getFeaturesNames(transformingFeatures);
 		this.compilerFeaturesNames = getFeaturesNames(compilerFeatures);
 
 		if (destinationLocation != null)

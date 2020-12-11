@@ -24,13 +24,11 @@ import org.rebecalang.compiler.utils.TypesUtilities;
 import org.rebecalang.modeltransformer.AbstractExpressionTransformer;
 import org.rebecalang.modeltransformer.StatementTransformingException;
 import org.rebecalang.modeltransformer.TransformingContext;
-import org.rebecalang.modeltransformer.TransformingFeature;
 
 public class CoreRebecaExpressionTransformer extends AbstractExpressionTransformer {
 
-	public CoreRebecaExpressionTransformer(Set<CompilerFeature> cFeatures,
-			Set<TransformingFeature> tFeatures, ExceptionContainer container) {
-		super(cFeatures, tFeatures, container);
+	public CoreRebecaExpressionTransformer(Set<CompilerFeature> cFeatures, ExceptionContainer container) {
+		super(cFeatures, container);
 	}
 
 	public void initialize() {

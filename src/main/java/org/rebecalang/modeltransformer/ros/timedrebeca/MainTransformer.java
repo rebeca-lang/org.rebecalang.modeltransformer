@@ -30,7 +30,6 @@ import org.rebecalang.compiler.utils.Pair;
 import org.rebecalang.compiler.utils.TypesUtilities;
 import org.rebecalang.modeltransformer.AbstractExpressionTransformer;
 import org.rebecalang.modeltransformer.StatementTransformingException;
-import org.rebecalang.modeltransformer.TransformingFeature;
 import org.rebecalang.modeltransformer.ros.Rebeca2ROSTypesUtilities;
 
 
@@ -44,15 +43,13 @@ public class MainTransformer{
 	private RebecaModel rebecaModel;
 	AbstractExpressionTransformer expressionTransformer;
 	Set<CompilerFeature> compilerFeatures;
-	Set<TransformingFeature> transformingFeatures;
 	ExceptionContainer container;
 	public MainTransformer(String modelName, RebecaModel rebecaModel,
-			AbstractExpressionTransformer expressionTransformer, Set<CompilerFeature> compilerFeatures, Set<TransformingFeature> transformingFeatures, ExceptionContainer container) {
+			AbstractExpressionTransformer expressionTransformer, Set<CompilerFeature> compilerFeatures, ExceptionContainer container) {
 		this.modelName = modelName;
 		this.rebecaModel = rebecaModel;
 		this.expressionTransformer = expressionTransformer;
 		this.compilerFeatures = compilerFeatures;
-		this.transformingFeatures = transformingFeatures;
 		this.container = container;
 	}
 	
@@ -149,8 +146,8 @@ public class MainTransformer{
 	
 		
 		Map<Pair<String, String>, String> methodCalls = new HashMap<Pair<String, String>, String>();
-		CoreRebecaExpressionTransformer exTransformer = new CoreRebecaExpressionTransformer(compilerFeatures, transformingFeatures, container, modelName, itsClass, rebecaModel);
-		ReactiveClassTransformer rcTransformer = new ReactiveClassTransformer(rebecaModel, itsClass, modelName, exTransformer, compilerFeatures, transformingFeatures);
+		CoreRebecaExpressionTransformer exTransformer = new CoreRebecaExpressionTransformer(compilerFeatures, container, modelName, itsClass, rebecaModel);
+		ReactiveClassTransformer rcTransformer = new ReactiveClassTransformer(rebecaModel, itsClass, modelName, exTransformer, compilerFeatures);
 		methodCalls = rcTransformer.getMethodCalls();
 		
 		if(methodCalls.isEmpty())

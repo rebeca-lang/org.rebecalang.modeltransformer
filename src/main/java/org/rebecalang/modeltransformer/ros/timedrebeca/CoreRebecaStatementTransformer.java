@@ -29,15 +29,14 @@ import org.rebecalang.compiler.utils.CompilerFeature;
 import org.rebecalang.modeltransformer.AbstractExpressionTransformer;
 import org.rebecalang.modeltransformer.AbstractStatementTransformer;
 import org.rebecalang.modeltransformer.StatementTransformingException;
-import org.rebecalang.modeltransformer.TransformingFeature;
 import org.rebecalang.modeltransformer.ros.Rebeca2ROSTypesUtilities;
 
 
 public class CoreRebecaStatementTransformer extends AbstractStatementTransformer {
 
 	public CoreRebecaStatementTransformer(AbstractExpressionTransformer expressionTranslator,
-			Set<CompilerFeature> cFeatures, Set<TransformingFeature> tFeatures) {
-		super(expressionTranslator, cFeatures, tFeatures);
+			Set<CompilerFeature> cFeatures) {
+		super(expressionTranslator, cFeatures);
 	}
 	
 	public String transformMsgsrvBody(MethodDeclaration methodDeclaration) throws CodeCompilationException {

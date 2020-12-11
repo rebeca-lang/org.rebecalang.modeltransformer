@@ -21,7 +21,6 @@ import org.rebecalang.compiler.utils.ExceptionContainer;
 import org.rebecalang.compiler.utils.Pair;
 import org.rebecalang.compiler.utils.TypesUtilities;
 import org.rebecalang.modeltransformer.AbstractExpressionTransformer;
-import org.rebecalang.modeltransformer.TransformingFeature;
 import org.rebecalang.modeltransformer.ros.Rebeca2ROSTypesUtilities;
 import org.rebecalang.modeltransformer.ros.packageCreator.MsgDirectoryCreator;
 
@@ -60,8 +59,8 @@ public class ControllerClassTransformer{
 	
 	
 	public ControllerClassTransformer(RebecaModel rebecaModel, ReactiveClassDeclaration rc, String modelName, AbstractExpressionTransformer expressionTransformer,
-			Set<CompilerFeature> cFeatures, Set<TransformingFeature> tFeatures ) {
-		this.statementTransformer = new CoreRebecaStatementTransformer(expressionTransformer, cFeatures, tFeatures);
+			Set<CompilerFeature> cFeatures) {
+		this.statementTransformer = new CoreRebecaStatementTransformer(expressionTransformer, cFeatures);
 		this.expressionTransformer = (CoreRebecaExpressionTransformer) expressionTransformer;
 		this.rc = rc;
 		this.modelName = modelName;
