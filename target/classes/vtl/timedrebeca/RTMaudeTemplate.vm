@@ -1,0 +1,780 @@
+*** ................................................................................................................
+*** ................................  Timed Rebeca to Real-Time Maude ...............................................
+*** ................................................................................................................
+
+load real-time-maude.maude
+load rtm-tctl.maude
+
+(tomod AFRA is
+
+    protecting STRING .
+    protecting QID .
+    protecting INT .
+    protecting TIME-INF .
+    protecting NAT-TIME-DOMAIN .        ---needed for the value id: 0
+    protecting META-TERM .          	---needed for Variable
+    protecting CONVERSION . 
+
+
+    var I : Int . 
+    op newName : Int -> String [ctor] .
+    eq newName (I) = string(I,10) .
+
+
+    subsort String < Oid .
+    subsort Int < Time .
+
+
+--- Expression definition part
+    sorts BoolVar IntVar .
+    sorts BoolExp IntExp .
+
+    subsort Int IntVar < IntExp .
+    subsort Bool BoolVar < BoolExp .
+
+    op _+_ : IntExp IntExp -> IntExp [ctor ditto ] .
+    op _-_ : IntExp IntExp -> IntExp [ctor ditto ] .
+    op _*_ : IntExp IntExp -> IntExp [ctor ditto ] .
+    op _//_ : IntExp IntExp -> IntExp [ctor ] .    
+    op _%_ : IntExp IntExp -> IntExp [ctor ] .    
+    
+    op _=_ : IntExp IntExp -> BoolExp [ctor ] .
+
+    op _>=_ : IntExp IntExp -> BoolExp [ctor ditto ] .
+    op _<=_ : IntExp IntExp -> BoolExp [ctor ditto ] .
+    op _!=_ : IntExp IntExp -> BoolExp [ctor ] .
+    op _>_ :  IntExp IntExp -> BoolExp [ctor ditto ] .
+    op _<_ :  IntExp IntExp -> BoolExp [ctor ditto ] .
+
+
+    op _=_ :  BoolExp BoolExp -> BoolExp [ctor] .
+
+    op _&&_ : BoolExp BoolExp -> BoolExp [ctor] .
+    op _||_ : BoolExp BoolExp -> BoolExp [ctor] .
+    op !_ : BoolExp -> BoolExp [ctor] .
+
+	op _=_ : Qid Qid -> BoolExp [ctor] .
+	vars QI QI' : Qid . 
+	eq evalBoolExp(QI = QI' , VAL) = (QI == QI') .
+ 
+    var VAL : Valuation .
+    vars IE1 IE2 : IntExp .
+    vars BE1 BE2 : BoolExp .
+
+    var B : Bool .
+    var I : Int .
+    var BVAR : BoolVar .
+    var IVAR : IntVar .    
+    
+    op evalBoolExp : BoolExp Valuation -> Bool .
+
+    eq evalBoolExp(B , VAL) = B .                        
+    eq evalBoolExp(BVAR , ( (BVAR |-> B ) VAL) ) = B .            
+
+    op evalIntExp : IntExp Valuation -> Int .
+
+    eq evalIntExp(I , VAL) = I .
+    eq evalIntExp(IVAR , ( (IVAR |-> I) VAL)) = I .
+
+    eq evalBoolExp(IE1 = IE2 , VAL) =  (evalIntExp(IE1,VAL) == evalIntExp(IE2,VAL)) .
+    eq evalBoolExp(IE1 >= IE2 , VAL) =  (evalIntExp(IE1,VAL) >= evalIntExp(IE2,VAL)) .
+    eq evalBoolExp(IE1 <= IE2 , VAL) =  (evalIntExp(IE1,VAL) <= evalIntExp(IE2,VAL)) .
+    eq evalBoolExp(IE1 != IE2 , VAL) =  (evalIntExp(IE1,VAL) =/= evalIntExp(IE2,VAL)) .
+    eq evalBoolExp(IE1 > IE2 , VAL) =  (evalIntExp(IE1,VAL) > evalIntExp(IE2,VAL)) .
+    eq evalBoolExp(IE1 < IE2 , VAL) =  (evalIntExp(IE1,VAL) < evalIntExp(IE2,VAL)) .
+
+
+    eq evalBoolExp(BE1 = BE2 , VAL) =  (evalBoolExp(BE1, VAL) == evalBoolExp(BE2 , VAL)) .
+
+    eq evalBoolExp(BE1 && BE2 , VAL ) = (evalBoolExp(BE1, VAL) and evalBoolExp(BE2 , VAL)) .
+    eq evalBoolExp(BE1 || BE2 , VAL ) = (evalBoolExp(BE1, VAL) or  evalBoolExp(BE2 , VAL)) .
+    eq evalBoolExp( ! BE1 , VAL ) =  not evalBoolExp(BE1, VAL) .
+
+    eq evalIntExp(IE1 - IE2, VAL) = (evalIntExp(IE1,VAL) - evalIntExp(IE2,VAL)) .
+    eq evalIntExp(IE1 + IE2, VAL) = (evalIntExp(IE1,VAL) + evalIntExp(IE2,VAL)) .
+    eq evalIntExp(IE1 * IE2, VAL) = (evalIntExp(IE1,VAL) * evalIntExp(IE2,VAL)) .
+    eq evalIntExp(IE1 // IE2, VAL) = (evalIntExp(IE1,VAL) / evalIntExp(IE2,VAL)) .
+    eq evalIntExp(IE1 % IE2, VAL) = (evalIntExp(IE1,VAL) rem evalIntExp(IE2,VAL)) .    
+
+--- Valuation
+    sort Valuation .
+    op _|->_ : IntVar Int -> Valuation [ctor] .      
+    op _|->_ : BoolVar Bool -> Valuation [ctor] .        
+    op _|->_ : Qid Oid -> Valuation [ctor] .    *** for saving the sender of msg in its stateVars and save rebec as state var
+    op __ : Valuation Valuation -> Valuation [ctor assoc comm id: emptyValuation] .
+    op emptyValuation : -> Valuation [ctor] .
+
+--- Statements types defintion
+    sort Statement .
+    sort Statements .
+    subsort Statement < Statements .
+    op noStatements : -> Statements [ctor] .
+    op _;_ : Statements Statements -> Statements [ctor assoc id: noStatements] .  
+
+    sort ImmediateStatement . 
+    sort ImmediateStatements .     
+    subsort ImmediateStatement < ImmediateStatements . 
+    subsort ImmediateStatements < Statements .
+
+    op removeVars : Valuation -> ImmediateStatement [ctor] .  
+    op defI_ : IntVar -> ImmediateStatement [ctor] . 
+    op defB_ : BoolVar -> ImmediateStatement [ctor] .
+
+
+    sort Expr .
+    subsort IntExp < Expr .
+
+    sort NDExpr .
+    subsort Expr < NDExpr .
+    op _?_ : NDExpr NDExpr -> NDExpr [assoc comm ] .
+    var IX : Expr .
+    eq IX ? IX = IX .
+
+    op _:=_ : IntVar NDExpr -> Statement [ctor] .
+    op _:=_ : IntVar IntExp -> ImmediateStatement [ctor] .
+    op _:=_ : BoolVar BoolExp -> ImmediateStatement [ctor] .
+
+    op _:=_ : Qid Oid -> Statements [ctor] .
+
+    op _:=_ : Qid Qid -> ImmediateStatement [ctor] . 
+
+    op delay : Time -> Statement [ctor] .
+    op delay : IntExp -> Statement [ctor] .
+
+
+    op if_then_ : BoolExp Statements -> ImmediateStatement [ctor] .           
+    op if_then_else_ : BoolExp Statements Statements -> ImmediateStatement [ctor] .   
+
+    var BEXP : BoolExp .  vars S S' : Statements .                 
+    eq if BEXP then S = if BEXP then S else noStatements .
+
+
+--- dynamicity of rebecs
+    op new : ClassName Valuation ArgList  -> Oid [ctor] .
+
+
+--- for-statement defination
+    op for : Statement BoolExp Statement Statements -> ImmediateStatement [ctor] .  
+    op iterate : BoolExp Statement Statements -> ImmediateStatement [ctor] .   
+
+
+--- Msg and MsgList definition
+    sort MsgList .
+    subsort Msg < MsgList .
+    op nil : -> MsgList [ctor] .        *** empty list
+    op _::_ : MsgList MsgList -> MsgList [ctor assoc id: nil] . 
+
+    sort MsgHeader .
+    op constructor : -> MsgHeader [ctor] .
+
+--- arguments of msgs
+	sort ArgList .
+	op __ : ArgList ArgList -> ArgList [ctor assoc id: noArg] . 
+	op noArg : -> ArgList [ctor] .
+	op arg : Qid -> ArgList [ctor] . 
+	op arg : Oid -> ArgList [ctor] . 
+	op arg : IntVar -> ArgList [ctor] .
+	op arg : Int -> ArgList [ctor] .
+	op arg : BoolVar -> ArgList [ctor] .
+	op arg : Bool -> ArgList [ctor] .
+	op getVals : ArgList Valuation ArgList -> Valuation [ctor] .
+	var VV : Valuation . vars Q Q' : IntVar . var I : Int . var ARG ARG' : ArgList .
+	eq getVals (noArg,VV,noArg) = emptyValuation .
+	eq getVals ( arg(Q) ARG , (Q |-> I) VV , arg(Q') ARG') = (Q' |-> I) getVals(ARG , VV, ARG') .
+	eq getVals ( arg(I) ARG , VV , arg(Q') ARG') = (Q' |-> I) getVals(ARG , VV, ARG') .
+	var VV : Valuation . vars QB QB' : BoolVar . var B : Bool . var ARG ARG' : ArgList .
+	eq getVals ( arg(QB) ARG , (QB |-> B) VV , arg(QB') ARG') = (QB' |-> B) getVals(ARG , VV, ARG') .
+	eq getVals ( arg(B) ARG , VV , arg(QB') ARG') = (QB' |-> B) getVals(ARG , VV, ARG') .
+	var VV : Valuation . vars QO QO' : Qid . var O : Oid . var ARG ARG' : ArgList .
+	eq getVals ( arg(QO) ARG , (QO |-> O) VV , arg(QO') ARG') = (QO' |-> O) getVals(ARG , VV, ARG') .
+
+
+    op delTempVal : Valuation Valuation -> Valuation [ctor] .
+    vars V1 V2 : Valuation . var Q : IntVar . vars I II : Int .
+    eq delTempVal(V1,emptyValuation) = V1 .
+    eq delTempVal( (Q |-> I) V1 , (Q |-> II) V2 ) = delTempVal( V1,V2 ) .
+
+    vars V1 V2 : Valuation . var QI : Qid . vars O O' : Oid .
+    eq delTempVal( (QI |-> O) V1 , (QI |-> O') V2 ) = delTempVal( V1,V2 ) .
+
+    vars V1 V2 : Valuation . var QB : BoolVar . vars B B' : Bool .
+    eq delTempVal( (QB |-> B) V1 , (QB |-> B') V2 ) = delTempVal( V1,V2 ) .
+
+
+
+    op send_with_to_deadline_after_ : MsgHeader ArgList Qid IntExp IntExp -> ImmediateStatement [ctor] .
+    ops self sender : -> Qid [ctor] .
+
+    msg _with_from_deadline_ : MsgHeader Valuation Oid TimeInf -> Msg .
+    msg _with_from_to_deadline_ : MsgHeader Valuation Oid Oid TimeInf -> Msg .
+
+    sort DlyMsg .
+    subsort Msg < DlyMsg < NEMsgConfiguration .
+    op delayedMsg : Msg Time -> DlyMsg [ctor right id: 0] .
+
+--- msgSerevers definition
+    sort ClassName .
+    op msgServer : ClassName MsgHeader -> Statements .
+
+    op formalParams : MsgHeader -> ArgList .  
+    op constrParams : ClassName -> ArgList .
+
+
+---    sort KnownName .
+
+    
+--- class definition
+    class Rebec | stateVars : Valuation,        *** current values of variables
+                      queue : MsgList ,         *** messages in inbox of rebec
+ 	            zclassID : ClassName  ,      *** identifier of rebec (identefy the reactive class type)
+              	  toExecute : Statements .      *** statement to execute
+            
+    class IdGen | nextId : Int .
+
+*** ................................................................................................................
+*** ...............................................  Rules  ........................................................
+*** ................................................................................................................
+
+    vars T T' : Time .
+    var TT : TimeInf .
+
+    vars O O' R R' : Oid .
+    vars SNDR RCVR : Oid .
+
+    vars CN CN' : ClassName .
+    var NK : Qid . 
+
+    vars SVARS VAL VALL VALL' : Valuation .
+    var ARGS : ArgList .
+
+    vars MN H : MsgHeader .
+    vars MLL MS MR : MsgList .
+
+    vars S S' SS SR MC : Statements .
+    vars INIT UPD BODY STMTLIST : Statements .
+    
+    vars Q QQ : IntVar .
+    var QB : BoolVar .
+    vars I II : Int .
+    vars B BB : Bool .
+    vars BE COND : BoolExp .
+    vars IE IX IXX : IntExp .
+    vars LIST1 LIST2 : NDExpr .
+    var QI : Qid .
+
+    var MCONF : Configuration .
+
+op execS : Oid Valuation Statements ClassName Configuration -> Statements [ctor] .
+op newVals : Oid Valuation Statements ClassName Configuration -> Valuation [ctor] .
+op newMsgs : Oid Valuation Statements ClassName Configuration -> Configuration [ctor] .
+
+
+rl [readMessage] :
+    (MN with VAL from SNDR to RCVR deadline T )
+    < RCVR : Rebec | queue : MR >
+=>
+    < RCVR : Rebec | queue : MR :: (MN with VAL from SNDR deadline T) > .
+
+
+rl [takeMessage] :
+    < O : Rebec | stateVars : VAL , queue : (H with VALL from O' deadline TT) :: MLL ,
+              zclassID : CN , toExecute : noStatements >  *** must be idle
+=>
+    < O : Rebec | stateVars : VAL VALL (sender |-> O') , queue : MLL , 
+                  toExecute : msgServer(CN,H) ; removeVars(VALL (sender |-> O')) > .
+
+
+eq execS(O , (QQ |-> I) VAL , (QQ := IE) ; SS ,  CN ,MCONF) = 
+execS(O , (QQ |-> evalIntExp(IE, (QQ |-> I) VAL)) VAL , SS , CN ,MCONF) .
+
+eq newVals(O , (QQ |-> I) VAL , (QQ := IE) ; SS , CN ,MCONF) = 
+newVals(O , (QQ |-> evalIntExp(IE, (QQ |-> I) VAL)) VAL , SS , CN ,MCONF) .
+
+eq newMsgs(O , (QQ |-> I) VAL , (QQ := IE) ; SS , CN ,MCONF) = 
+newMsgs(O , (QQ |-> evalIntExp(IE, (QQ |-> I) VAL)) VAL , SS , CN ,MCONF) .
+
+
+
+eq execS(O , (QQ |-> I) VAL , (QQ := IE ? LIST2) ; SS , CN ,MCONF) = 
+(QQ := IE ? LIST2) ; SS .
+
+eq newVals(O , (QQ |-> I) VAL , (QQ := IE ? LIST2) ; SS , CN ,MCONF) = 
+(QQ |-> I) VAL .
+
+eq newMsgs(O , (QQ |-> I) VAL , (QQ := IE ? LIST2) ; SS , CN ,MCONF) = 
+MCONF .
+
+
+
+rl [detAndNondetAssignment] :
+    < O : Rebec | stateVars : (QQ |-> I) VAL ,
+            toExecute : (QQ := IE ? LIST2) ; SS >
+=>
+    < O : Rebec | stateVars : (QQ |-> evalIntExp(IE, (QQ |-> I) VAL)) VAL ,
+            toExecute : SS > .
+
+
+
+--- For Loop
+eq execS(O , VAL, for(INIT, COND, UPD, BODY) ; SS , CN ,MCONF) = 
+execS(O , VAL , INIT ; iterate(COND, UPD, BODY) ; SS  , CN ,MCONF) .
+
+eq newVals(O , VAL, for(INIT, COND, UPD, BODY) ; SS  , CN ,MCONF) = 
+newVals(O , VAL , INIT ; iterate(COND, UPD, BODY) ; SS  , CN ,MCONF) .
+
+eq newMsgs(O , VAL, for(INIT, COND, UPD, BODY) ; SS  , CN ,MCONF) = 
+newMsgs(O , VAL , INIT ; iterate(COND, UPD, BODY) ; SS  , CN ,MCONF) .
+
+
+
+eq execS(O , VAL, iterate(COND, UPD, BODY) ; SS  , CN ,MCONF) = 
+execS(O , VAL , ( if evalBoolExp(COND, VAL) then ( BODY ; UPD ; iterate(COND, UPD, BODY) ; SS )
+        else SS fi )  , CN ,MCONF) .
+
+eq newVals(O , VAL, iterate(COND, UPD, BODY) ; SS  , CN ,MCONF) = 
+newVals(O , VAL , ( if evalBoolExp(COND, VAL) then ( BODY ; UPD ; iterate(COND, UPD, BODY) ; SS )
+        else SS fi ) , CN ,MCONF) .
+
+eq newMsgs(O , VAL, iterate(COND, UPD, BODY) ; SS  , CN ,MCONF) = 
+newMsgs(O , VAL , ( if evalBoolExp(COND, VAL) then ( BODY ; UPD ; iterate(COND, UPD, BODY) ; SS )
+        else SS fi )  , CN ,MCONF) .
+
+
+--- Bool Det Assignment
+eq execS(O , (QB |-> B) VAL, (QB := BE ) ; SS   , CN ,MCONF) = 
+execS(O , (QB |-> evalBoolExp(BE, (QB |-> B) VAL)) VAL , SS  , CN ,MCONF) .
+
+eq newVals(O , (QB |-> B) VAL, (QB := BE ) ; SS   , CN ,MCONF) = 
+newVals(O , (QB |-> evalBoolExp(BE, (QB |-> B) VAL)) VAL , SS  , CN ,MCONF) .
+
+eq newMsgs(O , (QB |-> B) VAL, (QB := BE ) ; SS   , CN ,MCONF) = 
+newMsgs(O , (QB |-> evalBoolExp(BE, (QB |-> B) VAL)) VAL , SS  , CN ,MCONF) .
+
+
+--- If Else
+ceq execS(O , VAL, (if BE then S else S') ; SS  , CN ,MCONF) = 
+execS(O , VAL , S ; SS  , CN ,MCONF) if evalBoolExp(BE, VAL) == true . 
+
+ceq newVals(O , VAL, (if BE then S else S') ; SS  , CN ,MCONF) = 
+newVals(O , VAL , S ; SS  , CN ,MCONF) if evalBoolExp(BE, VAL) == true . 
+
+ceq newMsgs(O , VAL, (if BE then S else S') ; SS  , CN ,MCONF) = 
+newMsgs(O , VAL , S ; SS  , CN ,MCONF) if evalBoolExp(BE, VAL) == true . 
+
+
+
+ceq execS(O , VAL, (if BE then S else S') ; SS  , CN ,MCONF) = 
+execS(O , VAL , S' ; SS  , CN ,MCONF) if evalBoolExp(BE, VAL) == false . 
+
+ceq newVals(O , VAL, (if BE then S else S') ; SS  , CN ,MCONF) = 
+newVals(O , VAL , S' ; SS  , CN ,MCONF) if evalBoolExp(BE, VAL) == false . 
+
+ceq newMsgs(O , VAL, (if BE then S else S') ; SS  , CN ,MCONF) = 
+newMsgs(O , VAL , S' ; SS  , CN ,MCONF) if evalBoolExp(BE, VAL) == false . 
+
+
+
+--- delay Statement
+ceq execS(O , VAL, delay(IE) ; SS  , CN ,MCONF) = 
+delay( evalIntExp(IE,VAL) ) ; SS  if not (IE :: Int) .
+eq execS(O , VAL, delay(IE) ; SS  , CN ,MCONF) = delay( IE ) ; SS [owise] .
+
+eq newVals(O , VAL, delay(IE) ; SS  , CN ,MCONF) = VAL .
+
+eq newMsgs(O , VAL, delay(IE) ; SS  , CN ,MCONF) = MCONF .
+
+crl [delayExpression]  :
+< O : Rebec | stateVars : VAL , toExecute : delay(IE) ; SS > 
+=>
+< O : Rebec | stateVars : VAL , toExecute : delay( evalIntExp(IE,VAL) )  ; SS >
+    if not (IE :: Int) .
+
+rl [end-delay] :
+    < O : Rebec | toExecute : delay(0) ; SS > 
+=>        
+    < O : Rebec | toExecute : SS > .
+
+
+
+
+--- Variable Declaration
+eq execS(O ,  VAL , defI Q ; SS   , CN ,MCONF) = 
+execS(O ,  VAL ( Q |-> 0) , SS ; removeVars(Q |-> 0)  , CN ,MCONF) .
+
+eq newVals(O ,  VAL , defI Q ; SS   , CN ,MCONF) = 
+newVals(O ,  VAL ( Q |-> 0) , SS ; removeVars(Q |-> 0)  , CN ,MCONF) .
+
+eq newMsgs(O ,  VAL , defI Q ; SS   , CN ,MCONF) = 
+newMsgs(O ,  VAL ( Q |-> 0) , SS ; removeVars(Q |-> 0)  , CN ,MCONF) .
+
+
+
+eq execS(O ,  VAL , defB QB ; SS   , CN ,MCONF) = 
+execS(O ,  VAL ( QB |-> false) , SS ; removeVars(QB |-> false)  , CN ,MCONF) .
+
+eq newVals(O ,  VAL , defB QB ; SS   , CN ,MCONF) = 
+newVals(O ,  VAL ( QB |-> false) , SS ; removeVars(QB |-> false)  , CN ,MCONF) .
+
+eq newMsgs(O ,  VAL , defB QB ; SS   , CN ,MCONF) = 
+newMsgs(O ,  VAL ( QB |-> false) , SS ; removeVars(QB |-> false)  , CN ,MCONF) .
+
+
+--- emptyTempVars
+eq execS(O ,  VAL , removeVars(VALL) ; SS  , CN ,MCONF) = 
+execS(O ,  delTempVal(VAL,VALL) , SS  , CN ,MCONF) .
+
+eq newVals(O ,  VAL , removeVars(VALL) ; SS  , CN ,MCONF) = 
+newVals(O ,  delTempVal(VAL,VALL) , SS  , CN ,MCONF) .
+
+eq newMsgs(O ,  VAL , removeVars(VALL) ; SS  , CN ,MCONF) = 
+newMsgs(O ,  delTempVal(VAL,VALL) , SS  , CN ,MCONF) .
+
+
+
+eq execS(O ,  VAL , noStatements  , CN ,MCONF) = noStatements .
+eq newVals(O ,  VAL , noStatements  , CN ,MCONF) = VAL .
+eq newMsgs(O ,  VAL , noStatements  , CN,MCONF ) = MCONF .
+
+
+
+--- new Rebec
+eq execS(O ,  VAL , (NK := new( CN' , VALL , ARGS )) ; SS  , CN ,MCONF) = 
+(NK := new( CN' , VALL , ARGS )) ; SS .
+
+eq newVals(O ,  VAL , (NK := new( CN' , VALL , ARGS )) ; SS  , CN,MCONF ) = VAL .
+eq newMsgs(O ,  VAL , (NK := new( CN' , VALL , ARGS )) ; SS   , CN ,MCONF) = MCONF .
+
+
+rl [newRebec] :
+    < O : Rebec | stateVars : VAL (NK |-> R) , toExecute : (NK := new( CN , VALL , ARGS )) ; SS > 
+    < O' : IdGen | nextId : I > 
+=>
+    < O : Rebec | stateVars : VAL (NK |-> newName(I)) , toExecute : SS  > 
+    < O' : IdGen | nextId : I + 1 > 
+    
+    < newName(I) : Rebec | stateVars : VALL (self |-> newName(I)) ,
+            queue : (constructor with getVals(ARGS,VAL ,constrParams(CN)) from "GOD" deadline INF) ,
+            zclassID : CN ,
+            toExecute : noStatements > .            
+
+
+
+--- knownAssignment
+eq execS(O ,  VAL (QI |-> R) (NK |-> O') , (NK := QI) ; SS  , CN',MCONF) = 
+execS(O ,  VAL (QI |-> R) (NK |-> R) , SS  , CN',MCONF ) .
+
+eq newVals(O ,  VAL (QI |-> R) (NK |-> O') , (NK := QI) ; SS  , CN',MCONF) = 
+newVals(O ,  VAL (QI |-> R) (NK |-> R) , SS  , CN',MCONF ) .
+
+eq newMsgs(O ,  VAL (QI |-> R) (NK |-> O') , (NK := QI) ; SS  , CN',MCONF) = 
+newMsgs(O ,  VAL (QI |-> R) (NK |-> R) , SS  , CN',MCONF ) .
+
+
+
+--- Send Message 
+eq execS(O , VAL ( NK |-> RCVR), (send MN with ARGS to NK deadline IX after IXX) ; SS  , CN' ,MCONF) = 
+execS(O , VAL ( NK |-> RCVR), SS , CN' ,MCONF
+delayedMsg(MN with getVals(ARGS,VAL ( NK |-> RCVR),formalParams(MN)) from O to RCVR deadline evalIntExp(IX,VAL) , evalIntExp(IXX,VAL))
+) .
+
+eq newVals(O , VAL ( NK |-> RCVR), (send MN with ARGS to NK deadline IX after IXX) ; SS  , CN' ,MCONF) = 
+newVals(O , VAL ( NK |-> RCVR), SS , CN' ,MCONF
+delayedMsg(MN with getVals(ARGS,VAL ( NK |-> RCVR),formalParams(MN)) from O to RCVR deadline evalIntExp(IX,VAL) , evalIntExp(IXX,VAL))
+) .
+
+
+eq newMsgs(O , VAL ( NK |-> RCVR), (send MN with ARGS to NK deadline IX after IXX) ; SS  , CN' ,MCONF) = 
+newMsgs(O , VAL ( NK |-> RCVR), SS  , CN' ,MCONF
+delayedMsg(MN with getVals(ARGS,VAL ( NK |-> RCVR),formalParams(MN)) from O to RCVR deadline evalIntExp(IX,VAL) , evalIntExp(IXX,VAL))
+) .
+
+
+
+
+--- Should be the last rule to check
+
+var IMS : ImmediateStatements .
+
+rl[exec] :
+< O : Rebec | stateVars : VAL , toExecute : IMS ; SS  , zclassID : CN >  
+
+=>
+    < O : Rebec | stateVars : newVals(O,VAL,IMS ; SS,CN,none) ,  
+		  toExecute : execS(O,VAL,IMS ; SS,CN,none) , 
+	          zclassID : CN > 
+    newMsgs(O,VAL,IMS ; SS,CN,none) .
+
+
+*** ................................................................................................................
+*** ..........................................  Time Behavior  .....................................................
+*** ................................................................................................................
+        var SYSTEM : Configuration .
+    
+    crl [tick] : 
+        {SYSTEM}
+    => 
+        {elapsedTime(SYSTEM, mte(SYSTEM))} in time mte(SYSTEM) 
+        if mte (SYSTEM) > 0 .
+
+    vars CF1 CF2 CF : Configuration .
+    vars T T1 AFTER : Time .
+***    var TT : TimeInf .
+    var ML : MsgList . 
+    var SS' : Statements .
+***    vars O O' R R' : Oid . 
+    var MM : MsgHeader .
+    var M : Msg .
+
+    vars IX IXX : IntExp .
+
+    op DEADLINE-MISS : -> Configuration [ctor format (r o)] .
+
+    op elapsedTime : Configuration Time -> Configuration [frozen (1)] .
+    ceq elapsedTime (CF1 CF2, T) = elapsedTime(CF1, T) elapsedTime(CF2, T) if CF1 =/= none and CF2 =/= none .
+    eq elapsedTime(none, T) = none .
+    eq elapsedTime(< O : Rebec | queue : ML, toExecute : SS' >, T) = 
+              < O : Rebec | queue : decDeadline(ML, T), toExecute : decDelay(SS', T) > .
+
+    eq elapsedTime( < O : IdGen | nextId : I > , T) =  < O : IdGen | nextId : I > .    
+
+    *** There is no need to consider deadline miss of messages in queue, because can prove that it can be found
+    *** in traveling messgaes (There is a corresponding equivalence trace)
+
+
+    eq elapsedTime( delayedMsg( MM with VAL from R to R' deadline TT , AFTER) , T) = 
+              if TT < T then DEADLINE-MISS 
+              else 
+            ( if AFTER =/= T then delayedMsg( MM with VAL from R to R' deadline TT - T , AFTER - T) 
+            else ( MM with VAL from R to R' deadline TT - T ) fi )
+              fi .
+
+    eq elapsedTime( MM with VAL from R to R' deadline TT , T) = 
+              if TT >= T then (MM with VAL from R to R' deadline TT - T ) 
+              else DEADLINE-MISS fi .
+                                
+    eq elapsedTime(DEADLINE-MISS, T) = DEADLINE-MISS .
+
+    op decDelay : Statements Time -> Statements .                  
+    eq decDelay ( delay(T1) ; SS' , T ) = delay (T1 - T) ; SS' .        *** definatley T1 >= T because of mte
+    eq decDelay(SS' , T ) = SS' [owise] . 
+
+
+    op decDeadline : MsgList Time -> MsgList .                *** for Msg in MsgList
+    eq decDeadline((MM with VAL from R deadline T1) :: ML , T ) = 
+        if T1 < T then decDeadline( ML , T)                ***deadline miss!
+        else (MM with VAL from R deadline (T1 - T)) :: decDeadline(ML, T) fi .    
+    eq decDeadline(nil , T ) = nil .
+
+
+    op mte : Configuration -> TimeInf [frozen (1)] .
+    ceq mte(CF1 CF2) = min(mte(CF1), mte(CF2))
+        if CF1 =/= none and CF2 =/= none .
+    eq mte(none) = INF .
+    eq min(INF,T) = T .
+    eq min(INF, INF, T ) = min(INF,T) .
+
+
+    eq INF = 1000000 .
+
+    eq mte( < O : IdGen | nextId : I > ) = INF .
+    eq mte(< O : Rebec | toExecute : delay(TT) ; SS' >) = TT .
+    eq mte(< O : Rebec | queue : nil , toExecute : noStatements >) = INF . 
+    eq mte(< O : Rebec | >) = 0 [owise] .                
+    eq mte(delayedMsg(M,T)) = T .
+    eq mte(MM with VAL from R to R' deadline T  ) = 0 .
+    eq mte(DEADLINE-MISS) = 0 .
+
+
+
+
+*** .................................................................................................................
+*** ............................................... initial State ...................................................
+*** .................................................................................................................
+#macro (typeName $type)
+	#set($name = $TypesUtilities.getTypeName($TypesUtilities.getUpperType($type)))
+	#if($name == "int") #set($name = "IntVar") #elseif($name == "boolean") #set($name = "BoolVar") #elseif($name == "reactive class") #set($name = "Qid") #end $name #end
+
+#macro (typeInitValue $type)
+	#set($name = $TypesUtilities.getTypeName($TypesUtilities.getUpperType($type)))
+	#if($name == "int") #set($value = "0") #elseif($name == "boolean") #set($value = "false") #elseif($name == "reactive class") #set($value = $DOUBLE_QUOTE + "dummy" + $DOUBLE_QUOTE) #end $value #end
+
+#macro (formalParameters $parameters $reactiveClassDeclaration)
+	#if($parameters.size() == 0) noArg #else #foreach($parameter in $parameters) arg($reactiveClassDeclaration.getName()-$parameter.getName()) #end #end #end
+	
+#macro (methodBody $type $name $body)
+	eq msgServer($reactiveClassDeclaration.getName(), #if($name=="constructor") $name #else $reactiveClassDeclaration.getName()--$name #end ) = $statementTransformer.resolveStatement($body) . 
+#end
+	
+*** Reactive classes
+ops #foreach($reactiveClassDeclaration in $reactiveClassDeclarations) $reactiveClassDeclaration.getName() #end : -> ClassName [ctor] .
+
+#foreach($reactiveClassDeclaration in $reactiveClassDeclarations)
+	$TransformingContext.registerInContext("current-reactive-class", $reactiveClassDeclaration)
+	*** methods and known rebecs of $reactiveClassDeclaration.getName()
+	ops #if($reactiveClassDeclaration.getConstructors().size() != 0) constructor #end #foreach($msgsrv in $reactiveClassDeclaration.getMsgsrvs()) $reactiveClassDeclaration.getName()--$msgsrv.getName() #end : -> MsgHeader [ctor] .
+	
+	#if($reactiveClassDeclaration.getKnownRebecs().size() != 0)
+		ops #foreach($knownrebecDec in $reactiveClassDeclaration.getKnownRebecs()) #foreach($var in $knownrebecDec.getVariableDeclarators()) $reactiveClassDeclaration.getName()-$var.getVariableName() #end #end : -> Qid [ctor] .
+	#end
+	
+	#foreach($stateVars in $reactiveClassDeclaration.getStatevars()) 
+		#foreach($var in $stateVars.getVariableDeclarators())
+			op $reactiveClassDeclaration.getName()-$var.getVariableName() : -> #typeName($stateVars.getType()) [ctor] .
+		#end
+	#end
+	
+	#foreach($method in $reactiveClassDeclaration.getConstructors())
+		#set($parameters = $method.getFormalParameters())
+		#foreach($parameter in $parameters)
+			op $reactiveClassDeclaration.getName()-$parameter.getName() : -> #typeName($parameter.getType()) [ctor] .
+		#end
+		eq constrParams($reactiveClassDeclaration.getName()) = #formalParameters($method.getFormalParameters()) .
+		#methodBody($reactiveClassDeclaration.getName(), "constructor", $method.getBlock())
+	#end
+	
+	#foreach($method in $reactiveClassDeclaration.getMsgsrvs())
+		#set($parameters = $method.getFormalParameters())
+		#foreach($parameter in $parameters)
+			op $reactiveClassDeclaration.getName()-$parameter.getName() : -> #typeName($parameter.getType()) [ctor] .
+		#end
+		eq formalParams($reactiveClassDeclaration.getName()--$method.getName()) = #formalParameters($method.getFormalParameters()) .
+		#methodBody($reactiveClassDeclaration.getName(), $method.getName(), $method.getBlock())
+	#end
+#end
+
+*** main part
+op initState : -> GlobalSystem .  *** Initial State
+eq initState = {
+
+< "idgen" : IdGen | nextId : 0 > 
+
+#foreach($instance in $mainDefinition.getMainRebecDefinition())
+	#set($type = $TypesUtilities.getTypeName($instance.getType()))
+	#set($args = "")
+	#set($rcd = "NULL")
+	#foreach($reactiveClassDeclaration in $reactiveClassDeclarations)
+		#if($TypesUtilities.getType($reactiveClassDeclaration.getName()) == $instance.getType())
+			#set($rcd = $reactiveClassDeclaration)
+			#break;
+		#end
+	#end
+	#set($counter = 0)
+	#foreach($parameter in $rcd.getConstructors().get(0).getFormalParameters())
+		#set($typeName = $TypesUtilities.getTypeName($TypesUtilities.getUpperType($instance.getArguments().get($counter).getType())))
+		#set($value = $statementTransformer.resolveExpression($instance.getArguments().get($counter)))
+		#if($typeName == "reactive class")
+			#set($value = $value.substring($value.indexOf("-")))
+			#set($value = $DOUBLE_QUOTE + $value.substring(1) + $DOUBLE_QUOTE)
+		#end
+		#set($args = $args + " (${type}-$parameter.getName() |-> $value ) ") 
+		#set($counter = $counter + 1)
+	#end
+	#if($args == "")
+		#set($args = "emptyValuation")
+	#end
+
+	#set($counter = 0)
+	#set($bindings = "")
+	#foreach($knownRebecDec in $rcd.getKnownRebecs())
+		#foreach($knownRebec in $knownRebecDec.getVariableDeclarators())
+			#set($bindings = $bindings + " ($rcd.getName()-$knownRebec.getVariableName() |-> " + 
+					$DOUBLE_QUOTE + 
+					"$instance.getBindings().get($counter).getName()" + 
+					$DOUBLE_QUOTE + ")"
+				)
+			#set($counter = $counter + 1)
+		#end
+	#end
+
+	< "${instance.getName()}" : Rebec | stateVars :
+			#foreach($stateVars in $rcd.getStatevars()) #foreach($var in $stateVars.getVariableDeclarators()) (${type}-$var.getVariableName() |-> #typeInitValue($stateVars.getType()) ) #end #end
+			$bindings (self |-> "${instance.getName()}"), 
+			queue : (constructor with $args from "GOD" deadline INF) ,
+			zclassID : $type ,
+			toExecute : noStatements >
+#end
+} .
+endtom)
+
+*** .................................................................................................................
+*** ............................................... Command .........................................................
+*** .................................................................................................................
+
+set trace on .
+trace exclude REAL-TIME-MAUDE .
+set trace substitution off .
+set trace eq off .
+set trace off .
+
+***(tfrew initState in time <= 20000 .)
+
+***(frew [2000] initState .)
+
+
+
+
+*** .................................................................................................................
+*** ......................................  LTL and TCTL model Checking  ...........................................
+*** .................................................................................................................
+
+
+(tomod MODEL-CHECK-AFRA is
+  including TIMED-MODEL-CHECKER .
+  including TCTL-MODEL-CHECKER .
+  protecting AFRA .
+
+
+var CONF : Configuration .
+vars O O' : Oid . 
+var V : IntVar .
+vars I J : Int .
+var MH : MsgHeader .
+vars SNDR RCVR : Oid .
+var VAL : Valuation .
+var T : TimeInf .
+var ML : MsgList . 
+vars B B' : Bool .
+var BV : BoolVar .
+
+op valueOf_in_is_ : IntVar Oid Int -> Prop [ctor] .
+eq {CONF < O : Rebec | stateVars : (V |-> I) VAL >} |= valueOf V in O is I = true .
+eq {CONF} |= valueOf V in O is I = false [owise] .
+    
+op _of_is_ : BoolVar Oid Bool -> Prop [ctor] .
+eq {CONF < O : Rebec | stateVars : (BV |-> B) VAL >} |= BV of O is B' = B == B' .
+
+ops _of_>=_ _of_<_  : IntVar Oid Int -> Prop [ctor] .
+eq {CONF < O : Rebec | stateVars : (V |-> I) VAL >} |= V of O >= J = I >= J .
+eq {CONF < O : Rebec | stateVars : (V |-> I) VAL >} |= V of O < J = I < J .
+
+
+
+*** ex: valueOf 'reciver in "slave1" is 1
+
+op _hasSent_to_ : Oid MsgHeader Oid -> Prop [ctor] .
+eq {CONF (MH with VAL from SNDR to RCVR deadline T )} |= SNDR hasSent MH to RCVR = true .
+eq {CONF} |= SNDR hasSent MH to RCVR = false [owise] .
+
+
+op _hasSent_ : Oid MsgHeader -> Prop [ctor] .
+eq {CONF (MH with VAL from SNDR to RCVR deadline T )} |= SNDR hasSent MH = true .
+eq {CONF} |= SNDR hasSent MH = false [owise] .
+
+
+
+op _hasReceived_with_ : Oid MsgHeader Valuation -> Prop [ctor] .
+eq {CONF < O : Rebec | queue : (MH with (V |-> I) VAL from O' deadline T) :: ML >} |= O hasReceived MH with (V |-> I) = true .
+eq {CONF} |= O hasReceived MH with (V |-> I) = false [owise] .
+
+
+op _hasReceived_from_ : Oid MsgHeader Oid -> Prop [ctor] .
+eq {CONF < O : Rebec | queue : (MH with VAL from O' deadline T) :: ML >} |= O hasReceived MH from O' = true .
+eq {CONF} |= O hasReceived MH from O' = false [owise] .
+
+op _hasReceived_ : Oid MsgHeader -> Prop [ctor] .
+eq {CONF < O : Rebec | queue : (MH with VAL from O' deadline T) :: ML >} |= O hasReceived MH = true .
+eq {CONF} |= O hasReceived MH = false [owise] .
+
+
+endtom)
+
