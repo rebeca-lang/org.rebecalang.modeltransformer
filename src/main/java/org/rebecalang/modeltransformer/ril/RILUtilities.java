@@ -8,7 +8,6 @@ import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.FormalParame
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.MethodDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ReactiveClassDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Type;
-import org.rebecalang.compiler.utils.TypesUtilities;
 
 public class RILUtilities {
 
@@ -22,7 +21,7 @@ public class RILUtilities {
 	private static String createListOfParameterTypes(List<Type> parametersTypes) {
 		String paramTypes = "";
 		for (Type parameterType : parametersTypes) {
-			paramTypes += "$" + TypesUtilities.getTypeName(parameterType);
+			paramTypes += "$" + parameterType.getTypeName();
 		}
 		return paramTypes;
 	}
@@ -38,7 +37,7 @@ public class RILUtilities {
 
 	public static String computeMethodName(Type baseType, MethodInSymbolTableSpecifier mssp) {
 		List<Type> argumentsTypes = mssp.getArgumentsTypes();
-		return computeMethodName(TypesUtilities.getTypeName(baseType), mssp.getName(), argumentsTypes);
+		return computeMethodName(baseType.getTypeName(), mssp.getName(), argumentsTypes);
 	}
 
 	public static String computeMethodName(MethodInSymbolTableSpecifier castableMethodSpecification) {

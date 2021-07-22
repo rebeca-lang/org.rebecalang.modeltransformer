@@ -6,38 +6,45 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import org.rebecalang.compiler.utils.ExceptionContainer;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+@Component
 public class ROSPackageCreator{
 	
-	protected String dirPath;
-	protected String rosPackagePath;
-	protected ExceptionContainer container;
+//	protected String dirPath;
+//	protected String rosPackagePath;
 	
-	public ROSPackageCreator(File destinationLocation, String modelName, ExceptionContainer container) {				
-		this.rosPackagePath = destinationLocation.getAbsolutePath() + File.separatorChar + modelName;
-		this.dirPath = rosPackagePath;
-		this.container = container;
-		this.createDirectory();
+	@Autowired
+	protected ExceptionContainer exceptionContainer;
+	
+//	public ROSPackageCreator(File destinationLocation, String modelName) {				
+//		this.rosPackagePath = destinationLocation.getAbsolutePath() + File.separatorChar + modelName;
+//		this.dirPath = rosPackagePath;
+//		this.createDirectory();
+//	}
+	
+	private String getPath(File destinationLocation, String modelName) {
+		return destinationLocation.getAbsolutePath() + File.separatorChar + modelName;
 	}
 
-	public boolean createDirectory() {
+	public boolean createDirectory(File destinationLocation, String modelName) {
 		boolean success = true;
-		File file = new File(dirPath);
+		File file = new File(getPath(destinationLocation, modelName));
 		file.mkdirs();
 		return success;
 	}
 	
-	public boolean addFile(String fileName, String fileContent) throws IOException {
+	public boolean addFile(File destinationLocation, String modelName, String fileName, String fileContent) throws IOException {
 		boolean success = true;
 		
 		/* create file */
-		String filePath = dirPath + File.separatorChar + fileName;
+		String filePath = getPath(destinationLocation, modelName) + File.separatorChar + fileName;
 		File file = new File(filePath);
 		try{
 			file.createNewFile();
 		} catch(IOException e) {
-			container.addException(e);
-			e.printStackTrace();
+			exceptionContainer.addException(e);
 			success = false;
 		}
 		
@@ -48,8 +55,7 @@ public class ROSPackageCreator{
 	         bufferedWriter.write(fileContent);
 	         bufferedWriter.close();
 	     } catch (IOException e) {
-	    	 	container.addException(e);
-				e.printStackTrace();
+	    	 	exceptionContainer.addException(e);
 				success = false;
 			}	
 		return success;

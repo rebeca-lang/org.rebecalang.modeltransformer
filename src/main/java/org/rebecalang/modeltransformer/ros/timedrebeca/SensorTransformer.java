@@ -2,7 +2,6 @@ package org.rebecalang.modeltransformer.ros.timedrebeca;
 
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.FormalParameterDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.MsgsrvDeclaration;
-import org.rebecalang.compiler.utils.TypesUtilities;
 import org.rebecalang.modeltransformer.ros.Rebeca2ROSTypesUtilities;
 
 public class SensorTransformer{
@@ -13,14 +12,11 @@ public class SensorTransformer{
 	private String msgFileContent;
 	private String callbackFuncationSignature;
 	private String callbackFunctionBody;
-	public CoreRebecaStatementTransformer statementTransformer;
 	
 	
-	public SensorTransformer(CoreRebecaStatementTransformer statementTransformer,
-			MsgsrvDeclaration msgsrv, String modelName) {
+	public SensorTransformer(MsgsrvDeclaration msgsrv, String modelName) {
 		this.msgsrv = msgsrv;
 		this.modelName = modelName;
-		this.statementTransformer = statementTransformer;
 	}
 	
 	public void transform() {
@@ -45,7 +41,7 @@ public class SensorTransformer{
 		for(FormalParameterDeclaration param : msgsrv.getFormalParameters()) {
 			//System.out.println(TypesUtilities.getTypeName(param.getType()));
 			//String rebecaType = TypesUtilities.getTypeName(param.getType());
-			msgFileContent += Rebeca2ROSTypesUtilities.getROSMessageType(TypesUtilities.getTypeName(param.getType())) + " " + param.getName() + NEW_LINE;
+			msgFileContent += Rebeca2ROSTypesUtilities.getROSMessageType(param.getType().getTypeName()) + " " + param.getName() + NEW_LINE;
 		}
 		return msgFileContent;
 	}

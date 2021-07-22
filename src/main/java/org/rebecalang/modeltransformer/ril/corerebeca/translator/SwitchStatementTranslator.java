@@ -9,31 +9,44 @@ import java.util.List;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Statement;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.SwitchStatement;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.SwitchStatementGroup;
-import org.rebecalang.modeltransformer.ril.ExpressionTranslatorContainer;
-import org.rebecalang.modeltransformer.ril.StatementTranslatorContainer;
+import org.rebecalang.modeltransformer.ril.Rebeca2RILExpressionTranslatorContainer;
+import org.rebecalang.modeltransformer.ril.Rebeca2RILStatementTranslatorContainer;
 import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.AssignmentInstructionBean;
 import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.DeclarationInstructionBean;
 import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.InstructionBean;
 import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.JumpIfNotInstructionBean;
 import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.Variable;
+import org.rebecalang.modeltransformer.ril.corerebeca.translator.expresiontranslator.AbstractExpressionTranslator;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
+@Component
+@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class SwitchStatementTranslator extends AbstractStatementTranslator {
+
+	@Autowired
+	public SwitchStatementTranslator(Rebeca2RILStatementTranslatorContainer statementTranslatorContainer,
+			Rebeca2RILExpressionTranslatorContainer expressionTranslatorContainer) {
+		super(statementTranslatorContainer, expressionTranslatorContainer);
+	}
 
 	@Override
 	public void translate(Statement statement, ArrayList<InstructionBean> instructions) {
 
 		SwitchStatement switchStatement = (SwitchStatement) statement;
 		List<SwitchStatementGroup> switchStatementGroups = switchStatement.getSwitchStatementGroups();
-		String computedMethodName = StatementTranslatorContainer.getInstance().getComputedMethodName();
+		String computedMethodName = statementTranslatorContainer.getComputedMethodName();
 		List<JumpIfNotInstructionBean> listOfJumpInstructions = new LinkedList<JumpIfNotInstructionBean>();
-		Object valueOfCaseExpression = ExpressionTranslatorContainer.getInstance()
+		Object valueOfCaseExpression = expressionTranslatorContainer
 				.translate(switchStatement.getExpression(), instructions);
-		Variable tempVariable = AbstractStatementTranslator.getTempVariable();
+		Variable tempVariable = AbstractExpressionTranslator.getTempVariable();
 		instructions.add(new DeclarationInstructionBean(tempVariable.getVarName()));
 		for (SwitchStatementGroup ssg : switchStatementGroups) {
 			if (ssg.getExpression() == null)
 				continue;
-			Object ssgStatementTranslated = ExpressionTranslatorContainer.getInstance().translate(ssg.getExpression(),
+			Object ssgStatementTranslated = expressionTranslatorContainer.translate(ssg.getExpression(),
 					instructions);
 			AssignmentInstructionBean assignmentInstructionBean = new AssignmentInstructionBean(tempVariable,
 					ssgStatementTranslated, valueOfCaseExpression, "!=");
@@ -52,7 +65,7 @@ public class SwitchStatementTranslator extends AbstractStatementTranslator {
 				listOfJumpInstructions.get(counter++).setLineNumber(instructions.size());
 			}
 			for (Statement ssgStatement : ssg.getStatements())
-				StatementTranslatorContainer.getInstance().translate(ssgStatement, instructions);
+				statementTranslatorContainer.translate(ssgStatement, instructions);
 
 		}
 		if (jumpToDefault.getLineNumber() == INVALID_JUMP_LOCATION)

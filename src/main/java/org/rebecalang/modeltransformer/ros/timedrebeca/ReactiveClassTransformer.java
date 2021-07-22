@@ -6,8 +6,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
+import org.rebecalang.compiler.modelcompiler.corerebeca.CoreRebecaTypeSystem;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Annotation;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.FieldDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.FormalParameterDeclaration;
@@ -16,16 +16,16 @@ import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ReactiveClas
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.RebecaModel;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.SynchMethodDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.VariableDeclarator;
-import org.rebecalang.compiler.utils.CompilerFeature;
-import org.rebecalang.compiler.utils.ExceptionContainer;
 import org.rebecalang.compiler.utils.Pair;
-import org.rebecalang.compiler.utils.TypesUtilities;
-import org.rebecalang.modeltransformer.AbstractExpressionTransformer;
 import org.rebecalang.modeltransformer.ros.Rebeca2ROSTypesUtilities;
 import org.rebecalang.modeltransformer.ros.packageCreator.MsgDirectoryCreator;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 
 /* ROS Node Creator */
+
+@Component
 public class ReactiveClassTransformer{
 	
 	
@@ -37,11 +37,18 @@ public class ReactiveClassTransformer{
 	public final static String subscribersQueueSize = "30";
 	
 	
-	private ReactiveClassDeclaration rc;
-	private String modelName;
-	private RebecaModel rebecaModel;
-	private CoreRebecaStatementTransformer statementTransformer;
-	private CoreRebecaExpressionTransformer expressionTransformer;
+//	private ReactiveClassDeclaration rc;
+//	private String modelName;
+//	private RebecaModel rebecaModel;
+	
+	@Autowired
+	private TimedRebeca2ROSStatementTransformer statementTransformer;
+	@Autowired
+	private TimedRebeca2ROSExpressionTransformer expressionTransformer;
+	
+	@Autowired
+	MsgDirectoryCreator msgDirectoryCreator;
+	
 	private Map <Pair<String, String>, String> methodCalls = new HashMap<Pair<String, String>, String>();
 	
 	private String nodeName;
@@ -51,31 +58,25 @@ public class ReactiveClassTransformer{
 	private String nodePublishersCreation;
 	private String nodeSubscribersDefinitions;
 	private String nodeSubscribersCreation;
-/*	private String nodeROSFields;
-	private String nodeIncludes;
-	private String nodeConstructorSignature;
-	private String nodeConstructorBody;
-	private String nodeMainBody;
-*/
 	
 	
-	public ReactiveClassTransformer(RebecaModel rebecaModel, ReactiveClassDeclaration rc, String modelName, AbstractExpressionTransformer expressionTransformer,
-			Set<CompilerFeature> cFeatures) {
-		this.statementTransformer = new CoreRebecaStatementTransformer(expressionTransformer, cFeatures);
-		this.expressionTransformer = (CoreRebecaExpressionTransformer) expressionTransformer;
-		this.rc = rc;
-		this.modelName = modelName;
-		this.rebecaModel = rebecaModel;
-		this.nodeName = rc.getName() + "_node";
-		prepare();
-	}
+//	public ReactiveClassTransformer(RebecaModel rebecaModel, ReactiveClassDeclaration rc, String modelName, AbstractExpressionTransformer expressionTransformer,
+//			Set<CompilerExtension> cFeatures) {
+//		this.statementTransformer = new TimedRebeca2ROSStatementTransformer(expressionTransformer, cFeatures);
+//		this.expressionTransformer = (TimedRebeca2ROSExpressionTransformer) expressionTransformer;
+//		this.rc = rc;
+//		this.modelName = modelName;
+//		this.rebecaModel = rebecaModel;
+//		this.nodeName = rc.getName() + "_node";
+//		prepare();
+//	}
 	
-	private void prepare() {
+	public void prepare(ReactiveClassDeclaration rcd) {
 		/* get all the method calls in order to define publishers later on */
-		for(MsgsrvDeclaration msgsrv : rc.getMsgsrvs()) {
+		for(MsgsrvDeclaration msgsrv : rcd.getMsgsrvs()) {
 			statementTransformer.resolveBlockStatement(msgsrv.getBlock());
 		}
-		statementTransformer.resolveBlockStatement(rc.getConstructors().get(0).getBlock());
+		statementTransformer.resolveBlockStatement(rcd.getConstructors().get(0).getBlock());
 		
 		methodCalls = expressionTransformer.getMethodCalls();		
 		
@@ -85,9 +86,9 @@ public class ReactiveClassTransformer{
 		return methodCalls;
 	}
 	
-	private String resolveStateVariables() {
+	private String resolveStateVariables(ReactiveClassDeclaration rcd) {
 		nodePrivateFields = "";
-		for(FieldDeclaration fd : rc.getStatevars()) {
+		for(FieldDeclaration fd : rcd.getStatevars()) {
 			for(VariableDeclarator var : fd.getVariableDeclarators()) {
 				nodePrivateFields += statementTransformer.resolveVariableDeclaration(fd, var) + ";" + NEW_LINE;
 			}
@@ -98,9 +99,9 @@ public class ReactiveClassTransformer{
 
 	
 
-	private String defineSubscribers() {
+	private String defineSubscribers(ReactiveClassDeclaration rcd) {
 		nodeSubscribersDefinitions = "";
-		for(MsgsrvDeclaration msgsrv: rc.getMsgsrvs()) {
+		for(MsgsrvDeclaration msgsrv: rcd.getMsgsrvs()) {
 			if(! msgsrv.getAnnotations().isEmpty()) {
 				for(Annotation annot: msgsrv.getAnnotations()) {
 					if (annot.getIdentifier().equals("Sensor"))
@@ -123,23 +124,23 @@ public class ReactiveClassTransformer{
 		return nodeSubscribersDefinitions;
 	}
 	
-	private String createSubscribers() {
+	private String createSubscribers(ReactiveClassDeclaration rcd) {
 		nodeSubscribersCreation = "";
-		for(MsgsrvDeclaration msgsrv: rc.getMsgsrvs()) {
+		for(MsgsrvDeclaration msgsrv: rcd.getMsgsrvs()) {
 			if(! msgsrv.getAnnotations().isEmpty()) {
 				for(Annotation annot: msgsrv.getAnnotations()) {
 					if (annot.getIdentifier() == "Sensor")
 						{
 						nodeSubscribersCreation += msgsrv.getName() + "_sub_sensor = " + 
-								"n.subscribe(" + QUOTE_MARK + rc.getName() + "/" + msgsrv.getName() + QUOTE_MARK + ", "
-													+ subscribersQueueSize +", &" + rc.getName() + "::" + 
+								"n.subscribe(" + QUOTE_MARK + rcd.getName() + "/" + msgsrv.getName() + QUOTE_MARK + ", "
+													+ subscribersQueueSize +", &" + rcd.getName() + "::" + 
 											msgsrv.getName() + "Callback_Sensor" + ", this)" + SEMICOLON + NEW_LINE;
 						}
 					else
 						{
 						nodeSubscribersCreation += msgsrv.getName() + "_sub_sensor = " + 
-								"n.subscribe(" + QUOTE_MARK + rc.getName() + "/" + msgsrv.getName() + QUOTE_MARK + ", "
-													+ subscribersQueueSize +", &" + rc.getName() + "::" + 
+								"n.subscribe(" + QUOTE_MARK + rcd.getName() + "/" + msgsrv.getName() + QUOTE_MARK + ", "
+													+ subscribersQueueSize +", &" + rcd.getName() + "::" + 
 											msgsrv.getName() + "Callback" + ", this)" + SEMICOLON + NEW_LINE;
 						}
 				}
@@ -147,8 +148,8 @@ public class ReactiveClassTransformer{
 			else
 			{
 			nodeSubscribersCreation += msgsrv.getName() + "_sub_sensor = " + 
-					"n.subscribe(" + QUOTE_MARK + rc.getName() + "/" + msgsrv.getName() + QUOTE_MARK + ", "
-										+ subscribersQueueSize +", &" + rc.getName() + "::" + 
+					"n.subscribe(" + QUOTE_MARK + rcd.getName() + "/" + msgsrv.getName() + QUOTE_MARK + ", "
+										+ subscribersQueueSize +", &" + rcd.getName() + "::" + 
 								msgsrv.getName() + "Callback" + ", this)" + SEMICOLON + NEW_LINE;
 			}
 			
@@ -173,7 +174,7 @@ public class ReactiveClassTransformer{
 	}
 	
 	
-	private String createPublishers() {
+	private String createPublishers(ReactiveClassDeclaration rcd, String modelName) {
 		nodePublishersCreation = "";
 
 		if(methodCalls.isEmpty())
@@ -184,7 +185,7 @@ public class ReactiveClassTransformer{
 					(Map.Entry<Pair<String, String>, String>)it.next();
 			String topicName = "";
 			if(entry.getKey().getFirst().equals("self"))
-				topicName += rc.getName() + "/";
+				topicName += rcd.getName() + "/";
 			else
 				topicName += entry.getKey().getFirst() + "/";
 			topicName += entry.getKey().getSecond();
@@ -195,10 +196,10 @@ public class ReactiveClassTransformer{
 		return nodePublishersCreation;
 	}
 
-	private String createNodeMainBody() {
+	private String createNodeMainBody(ReactiveClassDeclaration rcd) {
 		String mainContent = "";
 	    mainContent += "int main(int argc, char** argv){" + NEW_LINE;
-	    mainContent += TAB + "ROS_INFO(\"" + rc.getName() + " node started\")" + SEMICOLON + NEW_LINE;
+	    mainContent += TAB + "ROS_INFO(\"" + rcd.getName() + " node started\")" + SEMICOLON + NEW_LINE;
 	    mainContent += TAB + "ros::init(argc, argv, " + QUOTE_MARK + nodeName + QUOTE_MARK + ")" + SEMICOLON + NEW_LINE;
 	    mainContent += TAB + "ros::NodeHandle nh(\"~\");\n";
 	    
@@ -206,24 +207,24 @@ public class ReactiveClassTransformer{
 	    mainContent += TAB + "std::string sender;" + NEW_LINE;
 		mainContent += TAB + " nh.getParam(" + QUOTE_MARK + "sender"+ QUOTE_MARK + ", " + "sender" +");" + NEW_LINE;
 
-	    for(FieldDeclaration knownrebec : rc.getKnownRebecs()) {
+	    for(FieldDeclaration knownrebec : rcd.getKnownRebecs()) {
 	    	for(VariableDeclarator vd : knownrebec.getVariableDeclarators()) {
 	    		mainContent += TAB + " nh.getParam(" + QUOTE_MARK + vd.getVariableName() + QUOTE_MARK + ", " + vd.getVariableName() + ");" + NEW_LINE;
 	    	}
 	    }
 	    /* call the constructor with initial values */
-	    String callConstructor = TAB + rc.getName() + " " + "_" + rc.getName().toLowerCase();
+	    String callConstructor = TAB + rcd.getName() + " " + "_" + rcd.getName().toLowerCase();
 	    
 	    /* if(!rc.getConstructors().get(0).getFormalParameters().isEmpty()) */
 	    
 	    	callConstructor += "(";
-	    	 for(FormalParameterDeclaration param: rc.getConstructors().get(0).getFormalParameters()) {
+	    	 for(FormalParameterDeclaration param: rcd.getConstructors().get(0).getFormalParameters()) {
 	    		 String type = "std::string";
-	    		 if(param.getType() == TypesUtilities.INT_TYPE)
+	    		 if(param.getType() == CoreRebecaTypeSystem.INT_TYPE)
 	    			 type = "int";
-	    		 if(param.getType() == TypesUtilities.DOUBLE_TYPE)
+	    		 if(param.getType() == CoreRebecaTypeSystem.DOUBLE_TYPE)
 	    			 type = "double";
-	    		 if(param.getType() == TypesUtilities.BOOLEAN_TYPE)
+	    		 if(param.getType() == CoreRebecaTypeSystem.BOOLEAN_TYPE)
 	    			 type = "bool";
 	    		 mainContent += TAB + type + " " + param.getName() + SEMICOLON + NEW_LINE;
 	    		mainContent += TAB + " nh.getParam(" + QUOTE_MARK + param.getName()+ QUOTE_MARK + ", " + param.getName() +");" + NEW_LINE;
@@ -240,16 +241,16 @@ public class ReactiveClassTransformer{
 	    return mainContent;
 	}
 	
-	private String createNodeConstructorSignature() {
+	private String createNodeConstructorSignature(ReactiveClassDeclaration rcd) {
 		String retValue = "";
-		retValue += rc.getConstructors().get(0).getName();
+		retValue += rcd.getConstructors().get(0).getName();
 		retValue += "(";
 		/* if(rc.getConstructors().get(0).getFormalParameters().isEmpty()) {
 			retValue += ")";
 			return retValue;
 		} */
-		for(FormalParameterDeclaration arg : rc.getConstructors().get(0).getFormalParameters()) {
-			retValue +=  Rebeca2ROSTypesUtilities.getCppType(TypesUtilities.getTypeName(arg.getType())) + " " + arg.getName() + ", ";
+		for(FormalParameterDeclaration arg : rcd.getConstructors().get(0).getFormalParameters()) {
+			retValue +=  Rebeca2ROSTypesUtilities.getCppType(arg.getType().getTypeName()) + " " + arg.getName() + ", ";
 		}
 		retValue += "std::string _sender";
 		/* retValue = retValue.substring(0, retValue.length() - 2); */
@@ -257,9 +258,9 @@ public class ReactiveClassTransformer{
 		return retValue;
 	}
 	
-	private String createNodeConstructorBody() {
+	private String createNodeConstructorBody(ReactiveClassDeclaration rcd, String modelName) {
 		String retValue = "";
-		retValue += createSubscribers() + createPublishers();
+		retValue += createSubscribers(rcd) + createPublishers(rcd, modelName);
 		retValue += "sender = _sender" + SEMICOLON + NEW_LINE;
 		if(! methodCalls.isEmpty()) {
 			retValue += "while(";
@@ -273,12 +274,12 @@ public class ReactiveClassTransformer{
 			retValue = retValue.substring(0, retValue.length() - 2);
 			retValue += ")" + SEMICOLON + NEW_LINE;
 		}
-		retValue += statementTransformer.resolveBlockStatement(rc.getConstructors().get(0).getBlock());
+		retValue += statementTransformer.resolveBlockStatement(rcd.getConstructors().get(0).getBlock());
 		retValue += "ros::spin()" + SEMICOLON + NEW_LINE; /*start processing of call back functions */
 		return retValue;
 	}
 	
-	private String getIncludes() {
+	private String getIncludes(RebecaModel rebecaModel, String modelName) {
 		String includes = "";
 		includes += "#include <ros/ros.h>" + NEW_LINE;
 		for(ReactiveClassDeclaration rcd: rebecaModel.getRebecaCode().getReactiveClassDeclaration()) {
@@ -297,20 +298,20 @@ public class ReactiveClassTransformer{
 		return includes;
 	}
 
-	public String getHeaderFileContent() {
+	public String getHeaderFileContent(RebecaModel rebecaModel, ReactiveClassDeclaration rcd, String modelName) {
 		String headerFileContent = "";
-		headerFileContent += getIncludes() + NEW_LINE;
-		headerFileContent += "class" + " " + rc.getName() + "{" + NEW_LINE;
+		headerFileContent += getIncludes(rebecaModel, modelName) + NEW_LINE;
+		headerFileContent += "class" + " " + rcd.getName() + "{" + NEW_LINE;
 		headerFileContent += "public:" + NEW_LINE;
-		headerFileContent += createNodeConstructorSignature() + SEMICOLON + NEW_LINE;
+		headerFileContent += createNodeConstructorSignature(rcd) + SEMICOLON + NEW_LINE;
 		
-		for (MsgsrvDeclaration msgsrv : rc.getMsgsrvs()) {
+		for (MsgsrvDeclaration msgsrv : rcd.getMsgsrvs()) {
 			if(! msgsrv.getAnnotations().isEmpty()) {
 				for(Annotation annot: msgsrv.getAnnotations()) {
 					if (annot.getIdentifier().equals("Sensor"))
 						{
 						SensorTransformer sensorTransformer =
-								new SensorTransformer(statementTransformer, msgsrv, modelName);
+								new SensorTransformer(msgsrv, modelName);
 						headerFileContent += "void " + sensorTransformer.getCallbackFunctionSignature() + SEMICOLON + NEW_LINE;
 						}
 					else
@@ -333,8 +334,8 @@ public class ReactiveClassTransformer{
 		
 		headerFileContent += "private:" + NEW_LINE;
 		
-		for(SynchMethodDeclaration method : rc.getSynchMethods()) {
-			headerFileContent += Rebeca2ROSTypesUtilities.getCppType(TypesUtilities.getTypeName(method.getReturnType()));
+		for(SynchMethodDeclaration method : rcd.getSynchMethods()) {
+			headerFileContent += Rebeca2ROSTypesUtilities.getCppType(method.getReturnType().getTypeName());
 			headerFileContent += " ";
 			headerFileContent += method.getName() + "(";
 			for(FormalParameterDeclaration param : method.getFormalParameters()) {
@@ -350,10 +351,10 @@ public class ReactiveClassTransformer{
 		headerFileContent += "/*ROS Fields*/" + NEW_LINE;
 		headerFileContent += "ros::NodeHandle n" + SEMICOLON + NEW_LINE;
 		headerFileContent += definePublishers();
-		headerFileContent += defineSubscribers();
+		headerFileContent += defineSubscribers(rcd);
 		
 		headerFileContent += "/* Reactive Class State Variables as Private Fields */" + NEW_LINE;
-		headerFileContent += resolveStateVariables();
+		headerFileContent += resolveStateVariables(rcd);
 		headerFileContent += "std::string sender" + SEMICOLON + NEW_LINE;
 		
 		/* for(FieldDeclaration vd : rc.getKnownRebecs()) {
@@ -363,13 +364,13 @@ public class ReactiveClassTransformer{
 			}
 		} */
 		
-		headerFileContent += resolveEnvironmentVariables();
+		headerFileContent += resolveEnvironmentVariables(rebecaModel);
 		headerFileContent += "}" + SEMICOLON;
 		return headerFileContent;
 	}
 
 
-	private String resolveEnvironmentVariables() {
+	private String resolveEnvironmentVariables(RebecaModel rebecaModel) {
 		String retValue = "";
 		for(FieldDeclaration fd : rebecaModel.getRebecaCode().getEnvironmentVariables()) {
 			retValue += "const ";
@@ -380,37 +381,37 @@ public class ReactiveClassTransformer{
 		return retValue;
 	}
 
-	public String getCppFileContent() {
+	public String getCppFileContent(ReactiveClassDeclaration rcd, String modelName) {
 		String retValue = "";
 		
 		retValue += "#include <" + modelName + File.separatorChar
-				 + rc.getName() + ".h" + ">" + NEW_LINE + NEW_LINE;
+				 + rcd.getName() + ".h" + ">" + NEW_LINE + NEW_LINE;
 		
 		retValue += NEW_LINE + "/* the following variables are needed for using sender keyword */" + NEW_LINE;
-		for(FieldDeclaration knwonrebec: rc.getKnownRebecs()) {
+		for(FieldDeclaration knwonrebec: rcd.getKnownRebecs()) {
 			for(VariableDeclarator vd : knwonrebec.getVariableDeclarators()) {
 				retValue += "std::string " + vd.getVariableName() + SEMICOLON + NEW_LINE;
 			}
 		}
 		
-		retValue += createNodeMainBody() + NEW_LINE + NEW_LINE;
+		retValue += createNodeMainBody(rcd) + NEW_LINE + NEW_LINE;
 		
-		retValue += rc.getName() + "::" + createNodeConstructorSignature() + "{" + NEW_LINE
-				 +createNodeConstructorBody() + "}" + NEW_LINE + NEW_LINE;
+		retValue += rcd.getName() + "::" + createNodeConstructorSignature(rcd) + "{" + NEW_LINE
+				 +createNodeConstructorBody(rcd, modelName) + "}" + NEW_LINE + NEW_LINE;
 		
-		for(MsgsrvDeclaration msgsrv : rc.getMsgsrvs()) {
+		for(MsgsrvDeclaration msgsrv : rcd.getMsgsrvs()) {
 			if(! msgsrv.getAnnotations().isEmpty()) {
 				for(Annotation annot: msgsrv.getAnnotations()) {
 					if (annot.getIdentifier() == "Sensor")
 						{
-						SensorTransformer sensorTransformer = new SensorTransformer(statementTransformer, msgsrv, modelName);
-						retValue += "void " + rc.getName() + "::" + sensorTransformer.getCallbackFunctionSignature() + 
+						SensorTransformer sensorTransformer = new SensorTransformer(msgsrv, modelName);
+						retValue += "void " + rcd.getName() + "::" + sensorTransformer.getCallbackFunctionSignature() + 
 								"{" + NEW_LINE + sensorTransformer.getCallbackFunctionBody() + "}" + NEW_LINE + NEW_LINE;
 						}
 					else
 						{
 						MessageServerTransformer messageServerTransformer = new MessageServerTransformer(statementTransformer, msgsrv, modelName);
-						retValue += "void " + rc.getName() + "::" + messageServerTransformer.getCallbackFunctionSignature() + 
+						retValue += "void " + rcd.getName() + "::" + messageServerTransformer.getCallbackFunctionSignature() + 
 								"{" + NEW_LINE + messageServerTransformer.getCallbackFunctionBody() + "}" + NEW_LINE + NEW_LINE;
 						}
 				}
@@ -418,23 +419,23 @@ public class ReactiveClassTransformer{
 			else
 			{
 			MessageServerTransformer messageServerTransformer = new MessageServerTransformer(statementTransformer, msgsrv, modelName);
-			retValue += "void " + rc.getName() + "::" + messageServerTransformer.getCallbackFunctionSignature() + 
+			retValue += "void " + rcd.getName() + "::" + messageServerTransformer.getCallbackFunctionSignature() + 
 					"{" + NEW_LINE + messageServerTransformer.getCallbackFunctionBody() + "}" + NEW_LINE + NEW_LINE;
 			}
 			
 			
 		}
 		
-		for(SynchMethodDeclaration method : rc.getSynchMethods()) {
-			retValue += transformSynchMethod(method);
+		for(SynchMethodDeclaration method : rcd.getSynchMethods()) {
+			retValue += transformSynchMethod(rcd, method);
 		} 
 		return retValue;
 	}
 
-	private String transformSynchMethod(SynchMethodDeclaration method) {
+	private String transformSynchMethod(ReactiveClassDeclaration rcd, SynchMethodDeclaration method) {
 		String retValue = "";
-		retValue += Rebeca2ROSTypesUtilities.getCppType(TypesUtilities.getTypeName(method.getReturnType()));
-		retValue += " " + rc.getName() + "::" + method.getName() + "(";
+		retValue += Rebeca2ROSTypesUtilities.getCppType(method.getReturnType().getTypeName());
+		retValue += " " + rcd.getName() + "::" + method.getName() + "(";
 		for(FormalParameterDeclaration param : method.getFormalParameters()) {
 			retValue += Rebeca2ROSTypesUtilities.getCorrespondingCppType(param.getType());
 			retValue += " " + param.getName() + ",";
@@ -448,23 +449,22 @@ public class ReactiveClassTransformer{
 		return retValue;
 	}
 
-	public void createMsgFiles(File destinationLocation, ExceptionContainer container) throws IOException {
-		MsgDirectoryCreator msgDirectoryCreator = new MsgDirectoryCreator(destinationLocation, modelName, container);
-		for(MsgsrvDeclaration msgsrv : rc.getMsgsrvs()) {
+	public void createMsgFiles(ReactiveClassDeclaration rcd, String modelName, File destinationLocation) throws IOException {
+		msgDirectoryCreator.createDirectory(destinationLocation, modelName);
+		for(MsgsrvDeclaration msgsrv : rcd.getMsgsrvs()) {
 			MessageServerTransformer messageServerTransformer = new MessageServerTransformer(statementTransformer, msgsrv, modelName);
-			msgDirectoryCreator.addFile(msgsrv.getName() + ".msg", messageServerTransformer.getMsgFileContent());
+			msgDirectoryCreator.addFile(destinationLocation, modelName, msgsrv.getName() + ".msg", messageServerTransformer.getMsgFileContent());
 		}
 	}
 
 
-	public void transformReactiveClass() {
-		if(! rc.getAnnotations().isEmpty()) {
-			for(Annotation annot: rc.getAnnotations()) {
+	public void transformReactiveClass(RebecaModel rebecaModel, ReactiveClassDeclaration rcd, String modelName) {
+		if(! rcd.getAnnotations().isEmpty()) {
+			for(Annotation annot: rcd.getAnnotations()) {
 				if (annot.getIdentifier() == "Robot")
 					transformTopicClass();
 				if (annot.getIdentifier() == "Controller")
 					transformTopicClass();
-				
 			}
 			
 		}

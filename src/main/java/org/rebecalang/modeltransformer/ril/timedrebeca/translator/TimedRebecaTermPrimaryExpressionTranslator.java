@@ -2,17 +2,30 @@ package org.rebecalang.modeltransformer.ril.timedrebeca.translator;
 
 import java.util.ArrayList;
 
+import org.rebecalang.compiler.modelcompiler.corerebeca.CoreRebecaTypeSystem;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Expression;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.TermPrimary;
 import org.rebecalang.compiler.modelcompiler.timedrebeca.objectmodel.TimedRebecaParentSuffixPrimary;
-import org.rebecalang.compiler.utils.TypesUtilities;
-import org.rebecalang.modeltransformer.ril.ExpressionTranslatorContainer;
+import org.rebecalang.modeltransformer.ril.Rebeca2RILExpressionTranslatorContainer;
 import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.InstructionBean;
 import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.Variable;
 import org.rebecalang.modeltransformer.ril.corerebeca.translator.expresiontranslator.TermPrimaryExpressionTranslator;
 import org.rebecalang.modeltransformer.ril.timedrebeca.rilinstruction.CallTimedMsgSrvInstructionBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
+@Component
+@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class TimedRebecaTermPrimaryExpressionTranslator extends TermPrimaryExpressionTranslator {
+
+	@Autowired
+	public TimedRebecaTermPrimaryExpressionTranslator(
+			Rebeca2RILExpressionTranslatorContainer expressionTranslatorContainer) {
+		super(expressionTranslatorContainer);
+	}
+
 	@Override
 	protected CallTimedMsgSrvInstructionBean createMsgSrvCallInstructionBean(Variable baseVariable,
 			ArrayList<Object> parameterTempObjects, String computedMethodName, TermPrimary termPrimary,
@@ -23,10 +36,10 @@ public class TimedRebecaTermPrimaryExpressionTranslator extends TermPrimaryExpre
 		Object afterResult = 0;
 		Object deadlineResult = Integer.MAX_VALUE;
 		if (afterExpression != null)
-			afterResult = ExpressionTranslatorContainer.getInstance().translate(afterExpression, instructions);
+			afterResult = expressionTranslatorContainer.translate(afterExpression, instructions);
 		Expression deadlineExpression = parentSuffixPrimary.getDeadlineExpression();
 		if (deadlineExpression != null)
-			deadlineResult = ExpressionTranslatorContainer.getInstance().translate(deadlineExpression, instructions);
+			deadlineResult = expressionTranslatorContainer.translate(deadlineExpression, instructions);
 		return new CallTimedMsgSrvInstructionBean(baseVariable, computedMethodName, parameterTempObjects, afterResult,
 				deadlineResult);
 
@@ -44,8 +57,7 @@ public class TimedRebecaTermPrimaryExpressionTranslator extends TermPrimaryExpre
 			return false;
 		if (statement.getParentSuffixPrimary().getArguments().size() != 1)
 			return false;
-		if (!TypesUtilities.getInstance().canTypeCastTo(
-				statement.getParentSuffixPrimary().getArguments().get(0).getType(), TypesUtilities.INT_TYPE))
+		if (!statement.getParentSuffixPrimary().getArguments().get(0).getType().canTypeCastTo(CoreRebecaTypeSystem.INT_TYPE))
 			return false;
 		return true;
 	}

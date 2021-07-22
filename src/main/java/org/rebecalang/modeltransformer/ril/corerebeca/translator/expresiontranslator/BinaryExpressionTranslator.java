@@ -4,21 +4,32 @@ import java.util.ArrayList;
 
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.BinaryExpression;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Expression;
-import org.rebecalang.modeltransformer.ril.ExpressionTranslatorContainer;
+import org.rebecalang.modeltransformer.ril.Rebeca2RILExpressionTranslatorContainer;
 import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.AssignmentInstructionBean;
 import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.DeclarationInstructionBean;
 import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.InstructionBean;
 import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.Variable;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
+@Component
+@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class BinaryExpressionTranslator extends AbstractExpressionTranslator {
 
+
+	@Autowired
+	public BinaryExpressionTranslator(Rebeca2RILExpressionTranslatorContainer expressionTranslatorContainer) {
+		super(expressionTranslatorContainer);
+	}
 
 	@Override
 	public Object translate(Expression expression , ArrayList<InstructionBean> instructions) {
 		BinaryExpression binaryExpression = (BinaryExpression) expression;
 		String operator = binaryExpression.getOperator();
-		Object leftSide = ExpressionTranslatorContainer.getInstance().translate(binaryExpression.getLeft(), instructions);
-		Object rightSide = ExpressionTranslatorContainer.getInstance().translate(binaryExpression.getRight(), instructions);
+		Object leftSide = expressionTranslatorContainer.translate(binaryExpression.getLeft(), instructions);
+		Object rightSide = expressionTranslatorContainer.translate(binaryExpression.getRight(), instructions);
 		if (!operator.equals("==") && !operator.equals("!=") && operator.endsWith("=")) {
 			AssignmentInstructionBean assignmentInstruction;
 			if (operator.equals("=")) {

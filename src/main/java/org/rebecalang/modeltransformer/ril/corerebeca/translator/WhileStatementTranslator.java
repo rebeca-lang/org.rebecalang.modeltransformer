@@ -6,27 +6,39 @@ import java.util.ArrayList;
 
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Statement;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.WhileStatement;
-import org.rebecalang.modeltransformer.ril.ExpressionTranslatorContainer;
-import org.rebecalang.modeltransformer.ril.StatementTranslatorContainer;
+import org.rebecalang.modeltransformer.ril.Rebeca2RILExpressionTranslatorContainer;
+import org.rebecalang.modeltransformer.ril.Rebeca2RILStatementTranslatorContainer;
 import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.InstructionBean;
 import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.JumpIfNotInstructionBean;
 import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.PopARInstructionBean;
 import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.PushARInstructionBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
+@Component
+@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class WhileStatementTranslator extends AbstractStatementTranslator {
+
+	@Autowired
+	public WhileStatementTranslator(Rebeca2RILStatementTranslatorContainer statementTranslatorContainer,
+			Rebeca2RILExpressionTranslatorContainer expressionTranslatorContainer) {
+		super(statementTranslatorContainer, expressionTranslatorContainer);
+	}
 
 	@Override
 	public void translate(Statement statement, ArrayList<InstructionBean> instructions) {
 		int beginOfWhileLineNumber = instructions.size();
 		WhileStatement whileStatement = (WhileStatement) statement;
 
-		Object conditionVariable = ExpressionTranslatorContainer.getInstance().translate(whileStatement.getCondition(),
+		Object conditionVariable = expressionTranslatorContainer.translate(whileStatement.getCondition(),
 				instructions);
-		String computedMethodName = StatementTranslatorContainer.getInstance().getComputedMethodName();
+		String computedMethodName = statementTranslatorContainer.getComputedMethodName();
 		JumpIfNotInstructionBean jumpToEndWhile = new JumpIfNotInstructionBean(conditionVariable, computedMethodName,
 				INVALID_JUMP_LOCATION);
 		instructions.add(jumpToEndWhile);
-		StatementTranslatorContainer.getInstance().translate(whileStatement.getStatement(), instructions);
+		statementTranslatorContainer.translate(whileStatement.getStatement(), instructions);
 		JumpIfNotInstructionBean jumpToTop = new JumpIfNotInstructionBean(null, computedMethodName,
 				INVALID_JUMP_LOCATION);
 		instructions.add(jumpToTop);

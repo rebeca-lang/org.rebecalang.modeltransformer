@@ -3,22 +3,31 @@ package org.rebecalang.modeltransformer.ril.corerebeca.translator;
 import java.util.ArrayList;
 
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Statement;
+import org.rebecalang.modeltransformer.ril.Rebeca2RILExpressionTranslatorContainer;
+import org.rebecalang.modeltransformer.ril.Rebeca2RILStatementTranslatorContainer;
 import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.InstructionBean;
-import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.Variable;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
-
+@Component
+@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public abstract class AbstractStatementTranslator {
-
-	public final static String TEMP_VAR_PREFIX = "$TEMP_ST$";
-	public final static String RETURN_METHOD_NAME = "$RETURN-NAME$";
-	public final static String RETURN_METHOD_LINE = "$RETURN-LINE$";
-	public static final String RETURN_VALUE = "$RETURN_VALUE$";
-
 	
-	static int counter = 0;
-	public static Variable getTempVariable() {
-		return new Variable(TEMP_VAR_PREFIX + counter++);
+
+	protected Rebeca2RILStatementTranslatorContainer statementTranslatorContainer;
+	protected Rebeca2RILExpressionTranslatorContainer expressionTranslatorContainer;
+
+
+	@Autowired
+	public AbstractStatementTranslator(Rebeca2RILStatementTranslatorContainer statementTranslatorContainer,
+			Rebeca2RILExpressionTranslatorContainer expressionTranslatorContainer) {
+		this.statementTranslatorContainer = statementTranslatorContainer;
+		this.expressionTranslatorContainer = expressionTranslatorContainer;
 	}
+
+
 
 	public abstract void translate(Statement statement, ArrayList<InstructionBean> instructions);
 }
