@@ -1,7 +1,5 @@
 package org.rebecalang.modeltransformer.ril;
 
-import java.util.ArrayList;
-import java.util.Hashtable;
 import java.util.Set;
 
 import org.rebecalang.compiler.modelcompiler.RebecaModelCompiler;
@@ -13,7 +11,6 @@ import org.rebecalang.compiler.utils.ExceptionContainer;
 import org.rebecalang.compiler.utils.Pair;
 import org.rebecalang.modeltransformer.TransformationException;
 import org.rebecalang.modeltransformer.ril.corerebeca.CoreRebecaModel2RILTransformer;
-import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.InstructionBean;
 import org.rebecalang.modeltransformer.ril.timedrebeca.TimedRebecaModel2RILTransformer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -37,7 +34,7 @@ public class Rebeca2RILModelTransformer {
 	@Qualifier("CORE_REBECA")
 	CoreRebecaModel2RILTransformer coreRebecaModelTransformer;
 	
-	public Hashtable<String, ArrayList<InstructionBean>> transformModel(Pair<RebecaModel, SymbolTable> model, 
+	public RILModel transformModel(Pair<RebecaModel, SymbolTable> model, 
 			Set<CompilerExtension> extension, 
 			CoreVersion coreVersion) {
 

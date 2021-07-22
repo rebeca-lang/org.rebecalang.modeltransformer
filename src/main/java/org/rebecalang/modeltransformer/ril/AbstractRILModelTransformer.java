@@ -1,7 +1,5 @@
 package org.rebecalang.modeltransformer.ril;
 
-import java.util.ArrayList;
-import java.util.Hashtable;
 import java.util.Set;
 
 import org.rebecalang.compiler.modelcompiler.SymbolTable;
@@ -9,7 +7,6 @@ import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.RebecaModel;
 import org.rebecalang.compiler.utils.CompilerExtension;
 import org.rebecalang.compiler.utils.CoreVersion;
 import org.rebecalang.compiler.utils.Pair;
-import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.InstructionBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.stereotype.Component;
@@ -32,7 +29,7 @@ public abstract class AbstractRILModelTransformer {
 		this.statementTranslatorContainer.setExpressionTranslatorContainer(expressionTranslatorContainer);
 	}
 
-	public abstract Hashtable<String, ArrayList<InstructionBean>> transformModel(
+	public abstract RILModel transformModel(
 			Pair<RebecaModel,SymbolTable> model, 
 			Set<CompilerExtension> extension, 
 			CoreVersion coreVersion);

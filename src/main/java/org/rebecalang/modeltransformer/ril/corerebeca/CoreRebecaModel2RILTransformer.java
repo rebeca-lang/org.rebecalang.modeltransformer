@@ -1,7 +1,6 @@
 package org.rebecalang.modeltransformer.ril.corerebeca;
 
 import java.util.ArrayList;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Set;
 
@@ -15,7 +14,6 @@ import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ContinueStat
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.DotPrimary;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.FieldDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ForStatement;
-import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.InstanceofExpression;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Literal;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.MethodDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.MsgsrvDeclaration;
@@ -32,6 +30,7 @@ import org.rebecalang.compiler.utils.CompilerExtension;
 import org.rebecalang.compiler.utils.CoreVersion;
 import org.rebecalang.compiler.utils.Pair;
 import org.rebecalang.modeltransformer.ril.AbstractRILModelTransformer;
+import org.rebecalang.modeltransformer.ril.RILModel;
 import org.rebecalang.modeltransformer.ril.RILUtilities;
 import org.rebecalang.modeltransformer.ril.Rebeca2RILExpressionTranslatorContainer;
 import org.rebecalang.modeltransformer.ril.Rebeca2RILStatementTranslatorContainer;
@@ -71,10 +70,10 @@ public class CoreRebecaModel2RILTransformer extends AbstractRILModelTransformer 
 	
 	public void initializeTranslators() {
 		
-		statementTranslatorContainer.registerTranslator(InstanceofExpression.class, 
-				appContext.getBean(BlockStatementTranslator.class, 
-						statementTranslatorContainer,
-						expressionTranslatorContainer));
+//		statementTranslatorContainer.registerTranslator(InstanceofExpression.class, 
+//				appContext.getBean(BlockStatementTranslator.class, 
+//						statementTranslatorContainer,
+//						expressionTranslatorContainer));
 		statementTranslatorContainer.registerTranslator(BlockStatement.class,
 				appContext.getBean(BlockStatementTranslator.class, 
 						statementTranslatorContainer,
@@ -131,12 +130,13 @@ public class CoreRebecaModel2RILTransformer extends AbstractRILModelTransformer 
 	}
 
 	@Override
-	public Hashtable<String, ArrayList<InstructionBean>> transformModel(
+	public RILModel transformModel(
 			Pair<RebecaModel, SymbolTable> model, 
 			Set<CompilerExtension> extension, 
 			CoreVersion coreVersion) {
 
-		Hashtable<String, ArrayList<InstructionBean>> transformedModelList = new Hashtable<String, ArrayList<InstructionBean>>();
+		RILModel transformedRILModel = new RILModel();
+		
 		RebecaModel rebecaModel = model.getFirst();
 		
 		statementTranslatorContainer.setSymbolTable(model.getSecond());
@@ -147,7 +147,7 @@ public class CoreRebecaModel2RILTransformer extends AbstractRILModelTransformer 
 			for(MsgsrvDeclaration msgsrv : rcd.getMsgsrvs()) {
 				ArrayList<InstructionBean> instructions = new ArrayList<InstructionBean>();
 				String computedMethodName = RILUtilities.computeMethodName(rcd, msgsrv);
-				transformedModelList.put(computedMethodName, instructions);
+				transformedRILModel.addMethod(computedMethodName, instructions);
 				statementTranslatorContainer.prepare(rcd, computedMethodName);
 				statementTranslatorContainer.translate(msgsrv.getBlock(), instructions);
 				instructions.add(new EndMsgSrvInstructionBean());
@@ -155,7 +155,7 @@ public class CoreRebecaModel2RILTransformer extends AbstractRILModelTransformer 
 			for(ConstructorDeclaration constructorDeclaration : rcd.getConstructors()) {
 				ArrayList<InstructionBean> instructions = new ArrayList<InstructionBean>();
 				String computedMethodName = RILUtilities.computeMethodName(rcd, constructorDeclaration);
-				transformedModelList.put(computedMethodName, instructions);
+				transformedRILModel.addMethod(computedMethodName, instructions);
 				statementTranslatorContainer.prepare(rcd, computedMethodName);
 				statementTranslatorContainer.translate(constructorDeclaration.getBlock(), instructions);
 				instructions.add(new EndMsgSrvInstructionBean());
@@ -163,14 +163,14 @@ public class CoreRebecaModel2RILTransformer extends AbstractRILModelTransformer 
 			for(MethodDeclaration methodDeclaration : rcd.getSynchMethods()) {
 				ArrayList<InstructionBean> instructions = new ArrayList<InstructionBean>();
 				String computedMethodName = RILUtilities.computeMethodName(rcd, methodDeclaration);
-				transformedModelList.put(computedMethodName, instructions);
+				transformedRILModel.addMethod(computedMethodName, instructions);
 				statementTranslatorContainer.prepare(rcd, computedMethodName);
 				statementTranslatorContainer.translate(methodDeclaration.getBlock(), instructions);
 				instructions.add(new EndMethodInstructionBean());
 			}
 			
 		}
-		return transformedModelList;
+		return transformedRILModel;
 	}
 
 }

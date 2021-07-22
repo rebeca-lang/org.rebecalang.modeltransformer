@@ -73,6 +73,6 @@ public class AssignmentInstructionBean extends InstructionBean {
 
 	@Override
 	public String toString() {
-		return leftVarName + " = " + firstOperand + operator + secondOperand;
+		return leftVarName + " = " + firstOperand + (operator == null ? "" : (operator + secondOperand));
 	}
 }
