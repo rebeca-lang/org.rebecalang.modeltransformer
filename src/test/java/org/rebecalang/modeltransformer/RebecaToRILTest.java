@@ -1,9 +1,7 @@
 package org.rebecalang.modeltransformer;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
@@ -15,6 +13,7 @@ import org.rebecalang.compiler.utils.CompilerExtension;
 import org.rebecalang.compiler.utils.CoreVersion;
 import org.rebecalang.compiler.utils.ExceptionContainer;
 import org.rebecalang.compiler.utils.Pair;
+import org.rebecalang.modeltransformer.ril.RILModel;
 import org.rebecalang.modeltransformer.ril.Rebeca2RILModelTransformer;
 import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.InstructionBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,13 +48,13 @@ public class RebecaToRILTest {
 		Pair<RebecaModel, SymbolTable> compilationResult = 
 				compileModel(model, extension, CoreVersion.CORE_2_1);
 		
-		Hashtable<String, ArrayList<InstructionBean>> transformModel = 
+		RILModel transformModel = 
 				rebeca2RIL.transformModel(compilationResult, extension, CoreVersion.CORE_2_1);
 		
-		for(String methodName : transformModel.keySet()) {
+		for(String methodName : transformModel.getMethodNames()) {
 			System.out.println(methodName);
 			int counter = 0;
-			for(InstructionBean instruction : transformModel.get(methodName)) {
+			for(InstructionBean instruction : transformModel.getInstructionList(methodName)) {
 				System.out.println("" + counter++ +":" + instruction);
 			}
 			System.out.println("...............................................");

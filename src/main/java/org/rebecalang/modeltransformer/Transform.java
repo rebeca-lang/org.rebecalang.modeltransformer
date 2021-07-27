@@ -24,6 +24,7 @@ import org.rebecalang.compiler.utils.CompilerExtension;
 import org.rebecalang.compiler.utils.CoreVersion;
 import org.rebecalang.compiler.utils.ExceptionContainer;
 import org.rebecalang.compiler.utils.Pair;
+import org.rebecalang.modeltransformer.ril.RILModel;
 import org.rebecalang.modeltransformer.ril.Rebeca2RILModelTransformer;
 import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.InstructionBean;
 import org.rebecalang.modeltransformer.ros.Rebeca2ROSModelTransformer;
@@ -200,7 +201,7 @@ public class Transform {
 						System.out.println("Rebeca to RIL transformer works for Rebeca core 2.1 or upper.");
 						return;						
 					}
-					Hashtable<String, ArrayList<InstructionBean>> transformedRILModel = transform.rebeca2RILModelTransformer.transformModel(compilationResult, extension, coreVersion);
+					RILModel transformedRILModel = transform.rebeca2RILModelTransformer.transformModel(compilationResult, extension, coreVersion);
 					
 				} else if (target.equalsIgnoreCase("SOLIDITY")) {
 					if (extension.contains(CompilerExtension.TIMED_REBECA) ||
