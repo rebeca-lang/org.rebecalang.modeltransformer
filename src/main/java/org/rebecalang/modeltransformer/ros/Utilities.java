@@ -5,7 +5,6 @@ import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.MsgsrvDeclar
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ReactiveClassDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.RebecaModel;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.VariableDeclarator;
-import org.rebecalang.compiler.utils.TypesUtilities;
 
 public class Utilities {
 	public Utilities() {
@@ -27,10 +26,10 @@ public class Utilities {
 		for(FieldDeclaration knownRC : rc.getKnownRebecs()) {
 			for(VariableDeclarator vd : knownRC.getVariableDeclarators()) {
 				if(vd.getVariableName().equals(rebecName)) {
-					System.out.println(TypesUtilities.getTypeName(knownRC.getType()));
-					toRC = Utilities.getReactiveClassByName(TypesUtilities.getTypeName(knownRC.getType()), rebecaModel);	
+					System.out.println(knownRC.getType().getTypeName());
+					toRC = Utilities.getReactiveClassByName(knownRC.getType().getTypeName(), rebecaModel);	
 				}
-			}
+				}
 		}
 		if(rebecName.equals("self"))
 			toRC = rc;

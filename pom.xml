@@ -4,11 +4,13 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.rebecalang</groupId>
 	<artifactId>modeltransformer</artifactId>
-	<version>1.6.1</version>
+	<version>1.7</version>
 
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<compilerversion>1.8</compilerversion>
+		<springframework.version>5.3.7</springframework.version>
 	</properties>
 
 	<dependencies>
@@ -28,7 +30,6 @@
 			<artifactId>compiler</artifactId>
 			<version>LATEST</version>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/com.squareup/javapoet -->
 		<dependency>
 			<groupId>com.squareup</groupId>
 			<artifactId>javapoet</artifactId>
@@ -44,7 +45,43 @@
 			<artifactId>velocity</artifactId>
 			<version>1.7</version>
 		</dependency>
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-api</artifactId>
+			<version>5.7.2</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-engine</artifactId>
+			<version>5.7.2</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-core</artifactId>
+			<version>${springframework.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+			<version>${springframework.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-beans</artifactId>
+			<version>${springframework.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-test</artifactId>
+			<version>${springframework.version}</version>
+			<scope>test</scope>
+		</dependency>
+		
 	</dependencies>
+
 
 	<profiles>
 		<profile>
@@ -69,8 +106,8 @@
 						<artifactId>maven-compiler-plugin</artifactId>
 						<version>3.8.1</version>
 						<configuration>
-							<source>1.8</source>
-							<target>1.8</target>
+							<source>${compilerversion}</source>
+							<target>${compilerversion}</target>
 						</configuration>
 					</plugin>
 				</plugins>
@@ -98,8 +135,8 @@
 						<artifactId>maven-compiler-plugin</artifactId>
 						<version>3.8.1</version>
 						<configuration>
-							<source>1.8</source>
-							<target>1.8</target>
+							<source>${compilerversion}</source>
+							<target>${compilerversion}</target>
 						</configuration>
 					</plugin>
 					<plugin>

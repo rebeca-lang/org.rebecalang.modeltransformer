@@ -6,8 +6,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
+import org.rebecalang.compiler.modelcompiler.corerebeca.CoreRebecaTypeSystem;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Annotation;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.FieldDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.FormalParameterDeclaration;
@@ -16,16 +16,16 @@ import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ReactiveClas
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.RebecaModel;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.SynchMethodDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.VariableDeclarator;
-import org.rebecalang.compiler.utils.CompilerFeature;
 import org.rebecalang.compiler.utils.ExceptionContainer;
 import org.rebecalang.compiler.utils.Pair;
-import org.rebecalang.compiler.utils.TypesUtilities;
-import org.rebecalang.modeltransformer.AbstractExpressionTransformer;
 import org.rebecalang.modeltransformer.ros.Rebeca2ROSTypesUtilities;
 import org.rebecalang.modeltransformer.ros.packageCreator.MsgDirectoryCreator;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 
 /* ROS Node Creator */
+@Component
 public class ControllerClassTransformer{
 	
 	
@@ -40,8 +40,6 @@ public class ControllerClassTransformer{
 	private ReactiveClassDeclaration rc;
 	private String modelName;
 	private RebecaModel rebecaModel;
-	private CoreRebecaStatementTransformer statementTransformer;
-	private CoreRebecaExpressionTransformer expressionTransformer;
 	private Map <Pair<String, String>, String> methodCalls = new HashMap<Pair<String, String>, String>();
 	
 	private String nodeName;
@@ -50,26 +48,31 @@ public class ControllerClassTransformer{
 	private String nodePublishersCreation;
 	private String nodeSubscribersDefinitions;
 	private String nodeSubscribersCreation;
-/*	private String nodeROSFields;
-	private String nodeIncludes;
-	private String nodeConstructorSignature;
-	private String nodeConstructorBody;
-	private String nodeMainBody;
-*/
+	
+	@Autowired
+	MsgDirectoryCreator msgDirectoryCreator;
+	@Autowired
+	private TimedRebeca2ROSStatementTransformer statementTransformer;
+	@Autowired
+	private TimedRebeca2ROSExpressionTransformer expressionTransformer;
 	
 	
-	public ControllerClassTransformer(RebecaModel rebecaModel, ReactiveClassDeclaration rc, String modelName, AbstractExpressionTransformer expressionTransformer,
-			Set<CompilerFeature> cFeatures) {
-		this.statementTransformer = new CoreRebecaStatementTransformer(expressionTransformer, cFeatures);
-		this.expressionTransformer = (CoreRebecaExpressionTransformer) expressionTransformer;
+//	public ControllerClassTransformer(RebecaModel rebecaModel, ReactiveClassDeclaration rc, String modelName, 
+//			TimedRebeca2ROSExpressionTransformer expressionTransformer,
+//			Set<CompilerExtension> cFeatures) {
+//		this.expressionTransformer = (TimedRebeca2ROSExpressionTransformer) expressionTransformer;
+//		this.rc = rc;
+//		this.modelName = modelName;
+//		this.rebecaModel = rebecaModel;
+//		this.nodeName = rc.getName() + "_node";
+//		prepare();
+//	}
+	
+	public void prepare(RebecaModel rebecaModel, ReactiveClassDeclaration rc, String modelName) {
 		this.rc = rc;
 		this.modelName = modelName;
 		this.rebecaModel = rebecaModel;
 		this.nodeName = rc.getName() + "_node";
-		prepare();
-	}
-	
-	private void prepare() {
 		/* get all the method calls in order to define publishers later on */
 		for(MsgsrvDeclaration msgsrv : rc.getMsgsrvs()) {
 			statementTransformer.resolveBlockStatement(msgsrv.getBlock());
@@ -204,11 +207,11 @@ public class ControllerClassTransformer{
 	    	callConstructor += "(";
 	    	 for(FormalParameterDeclaration param: rc.getConstructors().get(0).getFormalParameters()) {
 	    		 String type = "std::string";
-	    		 if(param.getType() == TypesUtilities.INT_TYPE)
+	    		 if(param.getType() == CoreRebecaTypeSystem.INT_TYPE)
 	    			 type = "int";
-	    		 if(param.getType() == TypesUtilities.DOUBLE_TYPE)
+	    		 if(param.getType() == CoreRebecaTypeSystem.DOUBLE_TYPE)
 	    			 type = "double";
-	    		 if(param.getType() == TypesUtilities.BOOLEAN_TYPE)
+	    		 if(param.getType() == CoreRebecaTypeSystem.BOOLEAN_TYPE)
 	    			 type = "bool";
 	    		 mainContent += TAB + type + " " + param.getName() + SEMICOLON + NEW_LINE;
 	    		mainContent += TAB + " nh.getParam(" + QUOTE_MARK + param.getName()+ QUOTE_MARK + ", " + param.getName() +");" + NEW_LINE;
@@ -234,7 +237,7 @@ public class ControllerClassTransformer{
 			return retValue;
 		} */
 		for(FormalParameterDeclaration arg : rc.getConstructors().get(0).getFormalParameters()) {
-			retValue +=  Rebeca2ROSTypesUtilities.getCppType(TypesUtilities.getTypeName(arg.getType())) + " " + arg.getName() + ", ";
+			retValue +=  Rebeca2ROSTypesUtilities.getCppType(arg.getType().getTypeName()) + " " + arg.getName() + ", ";
 		}
 		retValue += "std::string _sender";
 		/* retValue = retValue.substring(0, retValue.length() - 2); */
@@ -295,7 +298,7 @@ public class ControllerClassTransformer{
 					if (annot.getIdentifier() == "Sensor")
 						{
 						SensorTransformer sensorTransformer =
-								new SensorTransformer(statementTransformer, msgsrv, modelName);
+								new SensorTransformer(msgsrv, modelName);
 						headerFileContent += "void " + sensorTransformer.getCallbackFunctionSignature() + SEMICOLON + NEW_LINE;
 						}
 					else
@@ -320,7 +323,7 @@ public class ControllerClassTransformer{
 		headerFileContent += "private:" + NEW_LINE;
 		
 		for(SynchMethodDeclaration method : rc.getSynchMethods()) {
-			headerFileContent += Rebeca2ROSTypesUtilities.getCppType(TypesUtilities.getTypeName(method.getReturnType()));
+			headerFileContent += Rebeca2ROSTypesUtilities.getCppType(method.getReturnType().getTypeName());
 			headerFileContent += " ";
 			headerFileContent += method.getName() + "(";
 			for(FormalParameterDeclaration param : method.getFormalParameters()) {
@@ -389,7 +392,7 @@ public class ControllerClassTransformer{
 				for(Annotation annot: msgsrv.getAnnotations()) {
 					if (annot.getIdentifier() == "Sensor")
 						{
-						SensorTransformer sensorTransformer = new SensorTransformer(statementTransformer, msgsrv, modelName);
+						SensorTransformer sensorTransformer = new SensorTransformer(msgsrv, modelName);
 						retValue += "void " + rc.getName() + "::" + sensorTransformer.getCallbackFunctionSignature() + 
 								"{" + NEW_LINE + sensorTransformer.getCallbackFunctionBody() + "}" + NEW_LINE + NEW_LINE;
 						}
@@ -419,7 +422,7 @@ public class ControllerClassTransformer{
 
 	private String transformSynchMethod(SynchMethodDeclaration method) {
 		String retValue = "";
-		retValue += Rebeca2ROSTypesUtilities.getCppType(TypesUtilities.getTypeName(method.getReturnType()));
+		retValue += Rebeca2ROSTypesUtilities.getCppType(method.getReturnType().getTypeName());
 		retValue += " " + rc.getName() + "::" + method.getName() + "(";
 		for(FormalParameterDeclaration param : method.getFormalParameters()) {
 			retValue += Rebeca2ROSTypesUtilities.getCorrespondingCppType(param.getType());
@@ -435,10 +438,10 @@ public class ControllerClassTransformer{
 	}
 
 	public void createMsgFiles(File destinationLocation, ExceptionContainer container) throws IOException {
-		MsgDirectoryCreator msgDirectoryCreator = new MsgDirectoryCreator(destinationLocation, modelName, container);
+		msgDirectoryCreator.createDirectory(destinationLocation, modelName);
 		for(MsgsrvDeclaration msgsrv : rc.getMsgsrvs()) {
 			MessageServerTransformer messageServerTransformer = new MessageServerTransformer(statementTransformer, msgsrv, modelName);
-			msgDirectoryCreator.addFile(msgsrv.getName() + ".msg", messageServerTransformer.getMsgFileContent());
+			msgDirectoryCreator.addFile(destinationLocation, modelName, msgsrv.getName() + ".msg", messageServerTransformer.getMsgFileContent());
 		}
 	}
 

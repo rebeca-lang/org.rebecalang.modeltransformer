@@ -4,125 +4,72 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
+import org.rebecalang.compiler.modelcompiler.SymbolTable;
+import org.rebecalang.compiler.modelcompiler.corerebeca.CoreRebecaTypeSystem;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Annotation;
-import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.BinaryExpression;
-import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.BlockStatement;
-import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.BreakStatement;
-import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ConditionalStatement;
-import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ConstructorDeclaration;
-import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ContinueStatement;
-import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.DotPrimary;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.FieldDeclaration;
-import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ForStatement;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.FormalParameterDeclaration;
-import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Literal;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.MethodDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.MsgsrvDeclaration;
-import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.NonDetExpression;
-import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.PlusSubExpression;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ReactiveClassDeclaration;
-import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ReturnStatement;
-import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.SwitchStatement;
-import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.TermPrimary;
+import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.RebecaModel;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Type;
-import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.UnaryExpression;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.VariableDeclarator;
-import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.WhileStatement;
 import org.rebecalang.compiler.utils.CodeCompilationException;
-import org.rebecalang.compiler.utils.TypesUtilities;
-import org.rebecalang.modeltransformer.TransformingException;
-import org.rebecalang.modeltransformer.ril.AbstractRILModelTransformer;
-import org.rebecalang.modeltransformer.ril.ExpressionTranslatorContainer;
-import org.rebecalang.modeltransformer.ril.RILUtilities;
-import org.rebecalang.modeltransformer.ril.StatementTranslatorContainer;
-import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.EndMethodInstructionBean;
-import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.EndMsgSrvInstructionBean;
-import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.InstructionBean;
-import org.rebecalang.modeltransformer.ril.corerebeca.translator.BlockStatementTranslator;
-import org.rebecalang.modeltransformer.ril.corerebeca.translator.BreakStatementTranslator;
-import org.rebecalang.modeltransformer.ril.corerebeca.translator.ConditionalStatementTranslator;
-import org.rebecalang.modeltransformer.ril.corerebeca.translator.ContinueStatementTranslator;
-import org.rebecalang.modeltransformer.ril.corerebeca.translator.FieldDeclarationTranslator;
-import org.rebecalang.modeltransformer.ril.corerebeca.translator.ForStatementTranslator;
-import org.rebecalang.modeltransformer.ril.corerebeca.translator.ReturnStatementTranslator;
-import org.rebecalang.modeltransformer.ril.corerebeca.translator.SwitchStatementTranslator;
-import org.rebecalang.modeltransformer.ril.corerebeca.translator.WhileStatementTranslator;
-import org.rebecalang.modeltransformer.ril.corerebeca.translator.expresiontranslator.BinaryExpressionTranslator;
-import org.rebecalang.modeltransformer.ril.corerebeca.translator.expresiontranslator.DotPrimaryExpressionTranslator;
-import org.rebecalang.modeltransformer.ril.corerebeca.translator.expresiontranslator.LiteralStatementTranslator;
-import org.rebecalang.modeltransformer.ril.corerebeca.translator.expresiontranslator.NonDetExpressionTranslator;
-import org.rebecalang.modeltransformer.ril.corerebeca.translator.expresiontranslator.PlusSubExpressionTranslator;
-import org.rebecalang.modeltransformer.ril.corerebeca.translator.expresiontranslator.TermPrimaryExpressionTranslator;
-import org.rebecalang.modeltransformer.ril.corerebeca.translator.expresiontranslator.UnaryExpressionTranslator;
+import org.rebecalang.compiler.utils.CoreVersion;
+import org.rebecalang.compiler.utils.ExceptionContainer;
+import org.rebecalang.compiler.utils.Pair;
+import org.rebecalang.modeltransformer.TransformationException;
+import org.rebecalang.modeltransformer.solidity.Rebeca2SolidityExpressionTranslatorContainer;
+import org.rebecalang.modeltransformer.solidity.Rebeca2SolidityProperties;
+import org.rebecalang.modeltransformer.solidity.Rebeca2SolidityStatementTranslatorContainer;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 @Component
 @Qualifier("Rebeca2SolidityTransformer")
-public class CoreRebecaModelTransformer extends AbstractRILModelTransformer  {
+public class CoreRebecaModelTransformer {
 
 	private StringBuilder contract;
 	
-	public CoreRebecaModelTransformer() {
-//		initializeStatementTranslators();
+	private Rebeca2SolidityExpressionTranslatorContainer expressionTranslatorContainer;
+	private Rebeca2SolidityStatementTranslatorContainer statementTranslatorContainer;
+	
+	@Autowired
+	private CoreRebecaTypeSystem coreRebecaTypeSystem;
+
+	@Autowired
+	ExceptionContainer exceptionContainer;
+	
+	@Autowired
+	public CoreRebecaModelTransformer(
+			Rebeca2SolidityStatementTranslatorContainer statementTranslatorContainer,
+			Rebeca2SolidityExpressionTranslatorContainer expressionTranslatorContainer) {
+		this.statementTranslatorContainer = statementTranslatorContainer;
+		this.expressionTranslatorContainer = expressionTranslatorContainer;
 		contract = new StringBuilder();
 	}
-//	
-//	protected void initializeStatementTranslators() {
-//
-//		ExpressionTranslatorContainer.getInstance().registerTranslator(BinaryExpression.class,
-//				new BinaryExpressionTranslator());
-//		ExpressionTranslatorContainer.getInstance().registerTranslator(TermPrimary.class,
-//				new TermPrimaryExpressionTranslator());
-//		ExpressionTranslatorContainer.getInstance().registerTranslator(Literal.class, 
-//				new LiteralStatementTranslator());
-//		ExpressionTranslatorContainer.getInstance().registerTranslator(DotPrimary.class,
-//				new DotPrimaryExpressionTranslator());
-//		ExpressionTranslatorContainer.getInstance().registerTranslator(UnaryExpression.class,
-//				new UnaryExpressionTranslator());
-//		ExpressionTranslatorContainer.getInstance().registerTranslator(PlusSubExpression.class,
-//				new PlusSubExpressionTranslator());
-//		ExpressionTranslatorContainer.getInstance().registerTranslator(NonDetExpression.class,
-//				new NonDetExpressionTranslator());
-//		
-//		StatementTranslatorContainer.getInstance().registerTranslator(BlockStatement.class,
-//				new BlockStatementTranslator());
-//		StatementTranslatorContainer.getInstance().registerTranslator(ReturnStatement.class,
-//				new ReturnStatementTranslator());
-//		StatementTranslatorContainer.getInstance().registerTranslator(FieldDeclaration.class,
-//				new FieldDeclarationTranslator());
-//		StatementTranslatorContainer.getInstance().registerTranslator(WhileStatement.class,
-//				new WhileStatementTranslator());
-//		StatementTranslatorContainer.getInstance().registerTranslator(SwitchStatement.class,
-//				new SwitchStatementTranslator());
-//		StatementTranslatorContainer.getInstance().registerTranslator(ForStatement.class,
-//				new ForStatementTranslator());
-//		StatementTranslatorContainer.getInstance().registerTranslator(BreakStatement.class,
-//				new BreakStatementTranslator());
-//		StatementTranslatorContainer.getInstance().registerTranslator(ContinueStatement.class,
-//				new ContinueStatementTranslator());
-//		StatementTranslatorContainer.getInstance().registerTranslator(ConditionalStatement.class,
-//				new ConditionalStatementTranslator());
-//	}
 
+	
 	private void appendLine(String lineContent) {
 		contract.append(lineContent);
 		contract.append("\n");
 	}
 	
-	@Override
-	public void transformModel() throws IOException {
+	public void transformModel(Pair<RebecaModel, SymbolTable> model, 
+			CoreVersion coreVersion, Rebeca2SolidityProperties properties) throws IOException {
 
+		RebecaModel rebecaModel = model.getFirst();
+		
 		List<ReactiveClassDeclaration> reactiveClassDeclarations = 
-				this.rebecaModel.getRebecaCode().getReactiveClassDeclaration();
+				rebecaModel.getRebecaCode().getReactiveClassDeclaration();
 		
 		ReactiveClassDeclaration contractRC = findContractReactiveClass(reactiveClassDeclarations);
 		if(contractRC == null) {
-			container.addException(new TransformingException("None of the reactive classes is a contract"));
+			exceptionContainer.addException(new TransformationException("None of the reactive classes is a contract"));
 		}
 		
 		appendLine("contract " + contractRC.getName() + " {");
@@ -166,7 +113,7 @@ public class CoreRebecaModelTransformer extends AbstractRILModelTransformer  {
 //		}
 		
 		appendLine("}");
-		writeSolidityContractToFile();
+		writeSolidityContractToFile(properties.getModelName(), properties.getDestinationFolder());
 
 	}
 
@@ -178,8 +125,8 @@ public class CoreRebecaModelTransformer extends AbstractRILModelTransformer  {
 		parameters = parameters.length() == 0 ? "()" : ("(" + parameters.substring(2) + ")");
 		return parameters;
 	}
-	private void writeSolidityContractToFile() throws FileNotFoundException, IOException {
-		String fileName = destinationLocation.getAbsolutePath() + File.separatorChar + modelName;
+	private void writeSolidityContractToFile(String modelName, File destinationFolder) throws FileNotFoundException, IOException {
+		String fileName = destinationFolder.getAbsolutePath() + File.separatorChar + modelName;
 		RandomAccessFile ras = new RandomAccessFile(fileName, "rw");
 		ras.setLength(0);
 		ras.writeBytes(contract.toString());
@@ -216,7 +163,7 @@ public class CoreRebecaModelTransformer extends AbstractRILModelTransformer  {
 			if(rcd.getExtends() == null)
 				continue;
 			try {
-				if(rcd.getExtends() == TypesUtilities.getInstance().getType("Contract")) {
+				if(rcd.getExtends() == coreRebecaTypeSystem.getType("Contract")) {
 					return rcd;
 				}
 			} catch (CodeCompilationException e) {
@@ -227,9 +174,9 @@ public class CoreRebecaModelTransformer extends AbstractRILModelTransformer  {
 	}
 	
 	private String getTypeName(Type type) {
-		if (type == TypesUtilities.INT_TYPE)
+		if (type == CoreRebecaTypeSystem.INT_TYPE)
 			return "uint";
-		return TypesUtilities.getTypeName(type);
+		return type.getTypeName();
 	}
 
 }

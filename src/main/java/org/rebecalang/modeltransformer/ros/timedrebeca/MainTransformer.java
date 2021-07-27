@@ -5,8 +5,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
+import org.rebecalang.compiler.modelcompiler.corerebeca.CoreRebecaTypeSystem;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ArrayVariableInitializer;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.BaseClassDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Expression;
@@ -23,46 +23,47 @@ import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.TermPrimary;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Type;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.VariableDeclarator;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.VariableInitializer;
+import org.rebecalang.compiler.modelcompiler.timedrebeca.TimedRebecaTypeSystem;
 import org.rebecalang.compiler.utils.CodeCompilationException;
-import org.rebecalang.compiler.utils.CompilerFeature;
 import org.rebecalang.compiler.utils.ExceptionContainer;
 import org.rebecalang.compiler.utils.Pair;
-import org.rebecalang.compiler.utils.TypesUtilities;
-import org.rebecalang.modeltransformer.AbstractExpressionTransformer;
 import org.rebecalang.modeltransformer.StatementTransformingException;
 import org.rebecalang.modeltransformer.ros.Rebeca2ROSTypesUtilities;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 
 /* create the content of launch file */
+@Component
 public class MainTransformer{
 	private final static String NEW_LINE = "\r\n";
 	private final static String TAB = "\t";
 	public final static String QUOTE_MARK = "\"";
 	public final static String SEMICOLON = ";";
-	private String modelName;
-	private RebecaModel rebecaModel;
-	AbstractExpressionTransformer expressionTransformer;
-	Set<CompilerFeature> compilerFeatures;
-	ExceptionContainer container;
-	public MainTransformer(String modelName, RebecaModel rebecaModel,
-			AbstractExpressionTransformer expressionTransformer, Set<CompilerFeature> compilerFeatures, ExceptionContainer container) {
-		this.modelName = modelName;
-		this.rebecaModel = rebecaModel;
-		this.expressionTransformer = expressionTransformer;
-		this.compilerFeatures = compilerFeatures;
-		this.container = container;
-	}
+	
+	@Autowired
+	TimedRebeca2ROSExpressionTransformer expressionTransformer;
+	
+	@Autowired
+	ExceptionContainer exceptionContainer;
+	
+	@Autowired
+	TimedRebecaTypeSystem timedRebecaTypeSystem;
+	
+	@Autowired
+	ReactiveClassTransformer reactiveClassTransformer;
 	
 	
-	public String getLaunchFileContent() {
+	
+	public String getLaunchFileContent(RebecaModel rebecaModel, String modelName) {
 		String launchFileContent = "<launch>" + NEW_LINE;
-		launchFileContent += getNodesDeclaration() + getParamsDeclarations();
+		launchFileContent += getNodesDeclaration(rebecaModel, modelName) + getParamsDeclarations(rebecaModel);
 		launchFileContent += NEW_LINE + "</launch>";
 		return launchFileContent;
 	}
 
 
-	private String getNodesDeclaration() {
+	private String getNodesDeclaration(RebecaModel rebecaModel, String modelName) {
 		String retValue = "";
 		MainDeclaration rebecaMain = rebecaModel.getRebecaCode().getMainDeclaration();
 		
@@ -71,7 +72,7 @@ public class MainTransformer{
 			ReactiveClassDeclaration itsClass = null;
 			try {
 				//As the given models are compiled and verified, this statements never throws exception 
-				BaseClassDeclaration baseClassDeclaration = TypesUtilities.getInstance().getMetaData(rebecDefinition.getType());
+				BaseClassDeclaration baseClassDeclaration = timedRebecaTypeSystem.getMetaData(rebecDefinition.getType());
 				if(baseClassDeclaration instanceof InterfaceDeclaration)
 					throw new StatementTransformingException("Rebeca to ROS transformer does not support interface definition", 
 							baseClassDeclaration.getLineNumber(), baseClassDeclaration.getCharacter());
@@ -102,20 +103,20 @@ public class MainTransformer{
 				String type = getLaunchFileFieldsTypes(correspondentConstructorParam.getType());
 				retValue += " type=" + QUOTE_MARK + type + QUOTE_MARK;
 
-				retValue += " value=" + QUOTE_MARK + expressionTransformer.translate(arg, container) + QUOTE_MARK;
+				retValue += " value=" + QUOTE_MARK + expressionTransformer.translate(arg) + QUOTE_MARK;
 				retValue += "/>" + NEW_LINE;
 				i++;
 			}
 			
 		
-			retValue += getRemappingArguments(rebecDefinition);
+			retValue += getRemappingArguments(rebecaModel, rebecDefinition, modelName);
 			retValue += "</node>" + NEW_LINE;
 		}
 		return retValue;
 	}
 	
 	
-	private String getRemappingArguments(MainRebecDefinition rebecDefinition) {
+	private String getRemappingArguments(RebecaModel rebecaModel, MainRebecDefinition rebecDefinition, String modelName) {
 		String retValue = "";
 		 ReactiveClassDeclaration itsClass = null;
 		// itsClass = TypesUtilities.getInstance().getMetaData(rebecDefinition.getType());
@@ -146,9 +147,9 @@ public class MainTransformer{
 	
 		
 		Map<Pair<String, String>, String> methodCalls = new HashMap<Pair<String, String>, String>();
-		CoreRebecaExpressionTransformer exTransformer = new CoreRebecaExpressionTransformer(compilerFeatures, container, modelName, itsClass, rebecaModel);
-		ReactiveClassTransformer rcTransformer = new ReactiveClassTransformer(rebecaModel, itsClass, modelName, exTransformer, compilerFeatures);
-		methodCalls = rcTransformer.getMethodCalls();
+		expressionTransformer.prepare(modelName, itsClass, rebecaModel);
+		reactiveClassTransformer.prepare(itsClass);
+		methodCalls = reactiveClassTransformer.getMethodCalls();
 		
 		if(methodCalls.isEmpty())
 			return retValue;
@@ -176,7 +177,7 @@ public class MainTransformer{
 	}
 
 
-	private String getParamsDeclarations() {
+	private String getParamsDeclarations(RebecaModel rebecaModel) {
 		String retValue = "";
 		/* add environment variables to the launch file */
 		for(FieldDeclaration fieldDeclaration : rebecaModel.getRebecaCode().getEnvironmentVariables()){
@@ -190,7 +191,7 @@ public class MainTransformer{
 					retValue += " type=" + QUOTE_MARK + 
 									getLaunchFileFieldsTypes(fieldDeclaration.getType())+ QUOTE_MARK;
 					retValue += " value=";
-					retValue += QUOTE_MARK + expressionTransformer.translate(((OrdinaryVariableInitializer)variableInitializer).getValue(), container) + QUOTE_MARK;
+					retValue += QUOTE_MARK + expressionTransformer.translate(((OrdinaryVariableInitializer)variableInitializer).getValue()) + QUOTE_MARK;
 					retValue += " />" + NEW_LINE;
 				}
 			}
@@ -202,13 +203,13 @@ public class MainTransformer{
 	
 	private String getLaunchFileFieldsTypes(Type type) {
 		String typeName = "";
-		if(type.equals(TypesUtilities.INT_TYPE))
+		if(type.equals(CoreRebecaTypeSystem.INT_TYPE))
 			typeName = "int";
 		else
-			if(type.equals(TypesUtilities.DOUBLE_TYPE))
+			if(type.equals(CoreRebecaTypeSystem.DOUBLE_TYPE))
 				typeName = "double";
 			else
-				if(type.equals(TypesUtilities.BOOLEAN_TYPE))
+				if(type.equals(CoreRebecaTypeSystem.BOOLEAN_TYPE))
 					typeName = "bool";
 				else
 					typeName = "str"; 

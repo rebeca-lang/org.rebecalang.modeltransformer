@@ -20,12 +20,6 @@
     <orderEntry type="library" name="Maven: junit:junit:3.8.1" level="project" />
     <orderEntry type="library" name="Maven: commons-cli:commons-cli:1.2" level="project" />
     <orderEntry type="module" module-name="compiler" />
-    <orderEntry type="library" name="Maven: org.springframework:spring-core:5.3.7" level="project" />
-    <orderEntry type="library" name="Maven: org.springframework:spring-jcl:5.3.7" level="project" />
-    <orderEntry type="library" name="Maven: org.springframework:spring-context:5.3.7" level="project" />
-    <orderEntry type="library" name="Maven: org.springframework:spring-aop:5.3.7" level="project" />
-    <orderEntry type="library" name="Maven: org.springframework:spring-expression:5.3.7" level="project" />
-    <orderEntry type="library" name="Maven: org.springframework:spring-beans:5.3.7" level="project" />
     <orderEntry type="library" name="Maven: org.antlr:antlr4:4.8-1" level="project" />
     <orderEntry type="library" name="Maven: org.antlr:antlr-runtime:3.5.2" level="project" />
     <orderEntry type="library" name="Maven: org.antlr:ST4:4.3" level="project" />
@@ -50,5 +44,18 @@
     <orderEntry type="library" name="Maven: org.apache.velocity:velocity:1.7" level="project" />
     <orderEntry type="library" name="Maven: commons-collections:commons-collections:3.2.1" level="project" />
     <orderEntry type="library" name="Maven: commons-lang:commons-lang:2.4" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.junit.jupiter:junit-jupiter-api:5.7.2" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.apiguardian:apiguardian-api:1.1.0" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.opentest4j:opentest4j:1.2.0" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.junit.platform:junit-platform-commons:1.7.2" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.junit.jupiter:junit-jupiter-engine:5.7.2" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.junit.platform:junit-platform-engine:1.7.2" level="project" />
+    <orderEntry type="library" name="Maven: org.springframework:spring-core:5.3.7" level="project" />
+    <orderEntry type="library" name="Maven: org.springframework:spring-jcl:5.3.7" level="project" />
+    <orderEntry type="library" name="Maven: org.springframework:spring-context:5.3.7" level="project" />
+    <orderEntry type="library" name="Maven: org.springframework:spring-aop:5.3.7" level="project" />
+    <orderEntry type="library" name="Maven: org.springframework:spring-expression:5.3.7" level="project" />
+    <orderEntry type="library" name="Maven: org.springframework:spring-beans:5.3.7" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.springframework:spring-test:5.3.7" level="project" />
   </component>
 </module>

@@ -6,37 +6,43 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import org.rebecalang.compiler.utils.ExceptionContainer;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+@Component
 public class IncludeDirectoryCreator{
 	
-	protected String dirPath;
-	protected String rosPackagePath;
-	protected ExceptionContainer container;
-	public IncludeDirectoryCreator(File destinationLocation, String modelName, ExceptionContainer container) {
-		this.rosPackagePath = destinationLocation.getAbsolutePath() + File.separatorChar + modelName;
-		this.dirPath = rosPackagePath + File.separatorChar + "include" + File.separatorChar + modelName;
-		this.container = container;
-		this.createDirectory();
+	@Autowired
+	protected ExceptionContainer exceptionContainer;
+
+//	public IncludeDirectoryCreator(File destinationLocation, String modelName) {
+//		String rosPackagePath = destinationLocation.getAbsolutePath() + File.separatorChar + modelName;
+//		this.dirPath = rosPackagePath + File.separatorChar + "include" + File.separatorChar + modelName;
+//		this.createDirectory();
+//	}
+
+	private String getPath(File destinationFolder, String modelName) {
+		String rosPackagePath = destinationFolder.getAbsolutePath() + File.separatorChar + modelName;
+		return rosPackagePath + File.separatorChar + "include" + File.separatorChar + modelName;
 	}
 
-
-	public boolean createDirectory() {
+	public boolean createDirectory(File destinationFolder, String modelName) {
 		boolean success = true;
-		File file = new File(dirPath);
+		File file = new File(getPath(destinationFolder, modelName));
 		file.mkdirs();
 		return success;
 	}
 	
-	public boolean addFile(String fileName, String fileContent) throws IOException {
+	public boolean addFile(File destinationFolder, String modelName, String fileName, String fileContent) throws IOException {
 		boolean success = true;
 		
 		/* create file */
-		String filePath = dirPath + File.separatorChar + fileName;
+		String filePath = getPath(destinationFolder, modelName) + File.separatorChar + fileName;
 		File file = new File(filePath);
 		try{
 			file.createNewFile();
 		} catch(IOException e) {
-			container.addException(e);
+			exceptionContainer.addException(e);
 			e.printStackTrace();
 			success = false;
 		}
@@ -48,10 +54,10 @@ public class IncludeDirectoryCreator{
 	         bufferedWriter.write(fileContent);
 	         bufferedWriter.close();
 	     } catch (IOException e) {
-	    	 	container.addException(e);
-				e.printStackTrace();
-				success = false;
-			}	
+	    	 exceptionContainer.addException(e);
+			e.printStackTrace();
+			success = false;
+		}	
 		return success;
 	}
 	

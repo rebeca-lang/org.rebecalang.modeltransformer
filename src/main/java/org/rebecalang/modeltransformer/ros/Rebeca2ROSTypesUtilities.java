@@ -1,13 +1,13 @@
 package org.rebecalang.modeltransformer.ros;
 
 
+import org.rebecalang.compiler.modelcompiler.corerebeca.CoreRebecaTypeSystem;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ArrayType;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.FieldDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ReactiveClassDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.RebecaModel;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Type;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.VariableDeclarator;
-import org.rebecalang.compiler.utils.TypesUtilities;
 
 public class Rebeca2ROSTypesUtilities {
 	
@@ -36,25 +36,25 @@ public class Rebeca2ROSTypesUtilities {
 	}
 	
 	public static String getCorrespondingCppType(Type rebecaType) {
-		if(rebecaType.equals(TypesUtilities.BOOLEAN_TYPE)) {
+		if(rebecaType.equals(CoreRebecaTypeSystem.BOOLEAN_TYPE)) {
 			return "bool";
 		}
-		if(rebecaType.equals(TypesUtilities.INT_TYPE))
+		if(rebecaType.equals(CoreRebecaTypeSystem.INT_TYPE))
 			return "int";
-		if(rebecaType.equals(TypesUtilities.DOUBLE_TYPE))
+		if(rebecaType.equals(CoreRebecaTypeSystem.DOUBLE_TYPE))
 			return "double";
-		if(rebecaType.equals(TypesUtilities.STRING_TYPE))
+		if(rebecaType.equals(CoreRebecaTypeSystem.STRING_TYPE))
 			return "std::string";
-		if(rebecaType.equals(TypesUtilities.BYTE_TYPE))
+		if(rebecaType.equals(CoreRebecaTypeSystem.BYTE_TYPE))
 			System.out.println("The Rebeca to ROS Transformer does not support byte Type."
 					+ "please replace all byte s with int, then try again");
-		return TypesUtilities.getTypeName(rebecaType);
+		return rebecaType.getTypeName();
 	}
 	
 	public static ReactiveClassDeclaration getClassName(Type classType, RebecaModel thisModel) {
 		ReactiveClassDeclaration rc = null;
 		for(ReactiveClassDeclaration classI: thisModel.getRebecaCode().getReactiveClassDeclaration()) {
-			if(classI.getName().equals(TypesUtilities.getTypeName(classType))){
+			if(classI.getName().equals(classType.getTypeName())){
 				return classI;
 			}
 		}

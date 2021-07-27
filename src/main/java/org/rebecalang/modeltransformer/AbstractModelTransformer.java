@@ -7,7 +7,7 @@ import java.util.Set;
 
 import org.apache.commons.cli.CommandLine;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.RebecaModel;
-import org.rebecalang.compiler.utils.CompilerFeature;
+import org.rebecalang.compiler.utils.CompilerExtension;
 import org.rebecalang.compiler.utils.ExceptionContainer;
 
 public abstract class AbstractModelTransformer {
@@ -22,14 +22,14 @@ public abstract class AbstractModelTransformer {
 
 	protected ExceptionContainer container;
 	protected File destinationLocation;
-	protected Set<CompilerFeature> compilerFeatures;
+	protected Set<CompilerExtension> compilerFeatures;
 	protected Set<String> transformingFeaturesNames;
 	protected Set<String> compilerFeaturesNames;
 	protected RebecaModel rebecaModel;
 	protected String modelName;
 
 	public void prepare(String modelName, RebecaModel rebecaModel,
-			Set<CompilerFeature> compilerFeatures,
+			Set<CompilerExtension> compilerFeatures,
 			CommandLine commandLine, File destinationLocation,
 			ExceptionContainer container) {
 		this.rebecaModel = rebecaModel;
@@ -45,10 +45,10 @@ public abstract class AbstractModelTransformer {
 
 	public abstract void transformModel() throws IOException;
 
-	public StatementTransformingException doesNotSupportException(
-			String message, int line, int column) {
-		return new StatementTransformingException(
-				"This version of transformer does not support "
-						+ message + ".", line, column);
-	}
+//	public StatementTransformingException doesNotSupportException(
+//			String message, int line, int column) {
+//		return new StatementTransformingException(
+//				"This version of transformer does not support "
+//						+ message + ".", line, column);
+//	}
 }

@@ -6,36 +6,47 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import org.rebecalang.compiler.utils.ExceptionContainer;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+@Component
 public class SrcDirectoryCreator{
 	
-	protected String dirPath;
-	protected String rosPackagePath;
-	protected ExceptionContainer container;
-	public SrcDirectoryCreator(File destinationLocation, String modelName, ExceptionContainer container) {				
-		this.rosPackagePath = destinationLocation.getAbsolutePath() + File.separatorChar + modelName;
-		this.dirPath = rosPackagePath + File.separatorChar + "src";
-		this.container = container;
-		this.createDirectory();
-	}
+//	protected String dirPath;
+//	protected String rosPackagePath;
+//	protected ExceptionContainer container;
+//	public SrcDirectoryCreator(File destinationLocation, String modelName, ExceptionContainer container) {				
+//		this.rosPackagePath = destinationLocation.getAbsolutePath() + File.separatorChar + modelName;
+//		this.dirPath = rosPackagePath + File.separatorChar + "src";
+//		this.container = container;
+//		this.createDirectory();
+//	}
 
-	public boolean createDirectory() {
+	@Autowired
+	ExceptionContainer exceptionContainer;
+	
+	private String getPath(File destinationLocation, String modelName) {
+		String rosPackagePath = destinationLocation.getAbsolutePath() + File.separatorChar + modelName;
+		return rosPackagePath + File.separatorChar + "src";
+	}
+	
+	public boolean createDirectory(File destinationLocation, String modelName) {
 		boolean success = true;
-		File file = new File(dirPath);
+		File file = new File(getPath(destinationLocation, modelName));
 		file.mkdirs();
 		return success;
 	}
 	
-	public boolean addFile(String fileName, String fileContent) throws IOException {
+	public boolean addFile(File destinationLocation, String modelName, String fileName, String fileContent) throws IOException {
 		boolean success = true;
 		
 		/* create file */
-		String filePath = dirPath + File.separatorChar + fileName;
+		String filePath = getPath(destinationLocation, modelName) + File.separatorChar + fileName;
 		File file = new File(filePath);
 		try{
 			file.createNewFile();
 		} catch(IOException e) {
-			container.addException(e);
+			exceptionContainer.addException(e);
 			e.printStackTrace();
 			success = false;
 		}
@@ -47,7 +58,7 @@ public class SrcDirectoryCreator{
 	         bufferedWriter.write(fileContent);
 	         bufferedWriter.close();
 	     } catch (IOException e) {
-	    	 	container.addException(e);
+	    	 	exceptionContainer.addException(e);
 				e.printStackTrace();
 				success = false;
 			}	
