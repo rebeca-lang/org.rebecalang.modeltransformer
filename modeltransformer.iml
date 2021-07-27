@@ -37,9 +37,9 @@
     <orderEntry type="library" name="Maven: org.graalvm.sdk:graal-sdk:21.1.0" level="project" />
     <orderEntry type="library" name="Maven: com.ibm.icu:icu4j:69.1" level="project" />
     <orderEntry type="library" name="Maven: com.squareup:javapoet:1.10.0" level="project" />
-    <orderEntry type="library" name="Maven: com.typesafe.akka:akka-actor_2.12:2.5.9" level="project" />
-    <orderEntry type="library" name="Maven: org.scala-lang:scala-library:2.12.4" level="project" />
-    <orderEntry type="library" name="Maven: com.typesafe:config:1.3.2" level="project" />
+    <orderEntry type="library" name="Maven: com.typesafe.akka:akka-actor_2.12:2.5.16" level="project" />
+    <orderEntry type="library" name="Maven: org.scala-lang:scala-library:2.12.6" level="project" />
+    <orderEntry type="library" name="Maven: com.typesafe:config:1.3.3" level="project" />
     <orderEntry type="library" name="Maven: org.scala-lang.modules:scala-java8-compat_2.12:0.8.0" level="project" />
     <orderEntry type="library" name="Maven: org.apache.velocity:velocity:1.7" level="project" />
     <orderEntry type="library" name="Maven: commons-collections:commons-collections:3.2.1" level="project" />

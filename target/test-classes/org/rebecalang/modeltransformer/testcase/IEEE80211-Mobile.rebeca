@@ -1,0 +1,178 @@
+/* protocol IEEE 802.11 RTS/CTS : csma/ca wireless collision avoidance*/
+
+reactiveclass RadioTransfer (6) {
+	statevars {	
+		boolean enable1;
+		boolean enable2;
+		Node node1;
+		Node node2;
+	}
+
+	RadioTransfer(Node pNode1, Node pNode2, boolean e1, boolean e2) {
+		enable1 = e1;
+		enable2 = e2; 
+		node1 = pNode1;
+		node2 = pNode2;
+	}
+	
+	msgsrv passRTS(byte sndr,byte rcvr) {		
+		delay(2);
+		if(enable1)
+			node1.rcvRTS(sndr,rcvr);
+		if(enable2)
+			node2.rcvRTS(sndr,rcvr);
+	}
+	
+	msgsrv passCTS(byte sndr,byte rcvr) {
+		delay(2);
+		if(enable1)
+			node1.rcvCTS(sndr,rcvr);
+		if(enable2)
+			node2.rcvCTS(sndr,rcvr);
+	}
+	
+	msgsrv passData(byte sndr,byte rcvr) {
+		if(enable1)		
+			node1.rcvData(sndr,rcvr); 
+	}					  //becuase of ring topology
+	
+	msgsrv newSecondNode(Node n2){
+		enable2 = true;
+		node2 = n2;
+	}
+	
+	msgsrv delSecondNode(){
+		enable2 = false;
+	}
+	
+	msgsrv newFirstNode(Node n1){
+		enable1 = true;
+		node1 = n1;
+	}
+	
+	msgsrv delFirstNode(){
+		enable1 = false;
+	}
+	
+}
+
+reactiveclass Node (6) {
+	statevars {
+		byte backOff;
+		byte dest;
+		byte id;
+		byte dataRate;
+		boolean channleIdle;
+		RadioTransfer radioTransfer;
+	}
+	
+	Node(RadioTransfer pRadioTransfer, byte myId, byte myDelayTime,byte myDest,boolean chIdle,byte myRate) {
+		id = myId;
+		backOff = myDelayTime;
+		dest = myDest;
+		channleIdle = chIdle;
+		dataRate = myRate;
+		self.sendRTS() after(dataRate); 
+		radioTransfer = pRadioTransfer;
+	}
+	
+	msgsrv sendRTS() {
+		if (channleIdle) {
+			radioTransfer.passRTS(id, dest);
+		}  
+		else {
+			//backOff = ?(4,5);
+			self.sendRTS() after(backOff);   
+		}	
+	}
+	
+	msgsrv sendData() {
+		radioTransfer.passData(id, dest);
+		self.sendRTS() after(dataRate);  
+	}
+
+	msgsrv rcvRTS(byte sndr,byte rcvr) {
+		//channleIdle = false;
+		if(rcvr == id) {
+			if( channleIdle ){
+				channleIdle = false;
+				radioTransfer.passCTS(id, sndr);
+			}	
+			else{
+				//backOff = ?(4,5);
+				self.rcvRTS(sndr,rcvr) after(backOff);
+			}
+		}
+		else {
+			channleIdle = false;
+		}		
+	}
+	
+	msgsrv rcvCTS(byte sndr,byte rcvr) {
+		if(rcvr == id){
+			self.sendData();	
+		}
+		else {
+			channleIdle = true;
+		}
+	}
+	
+	msgsrv rcvData(byte sndr,byte rcvr) {
+		channleIdle = true;
+	}
+}
+
+
+
+reactiveclass Network (6) {
+	knownrebecs {
+		RadioTransfer radioTransfer1;  
+		RadioTransfer radioTransfer2;    
+		RadioTransfer radioTransfer4; 
+		Node node2, node4;
+	}
+	statevars {
+		int createTime;
+		int liveDuration;
+		Node node3;
+		RadioTransfer radioTransfer3;
+		}
+
+	Network(int c, int l) {
+		createTime = c;
+		liveDuration = l;
+		delay(createTime);
+		self.MobilityModelNew();
+	}
+	
+	msgsrv MobilityModelNew() {		
+		radioTransfer3 = new RadioTransfer():(node4, node2,true,true);
+		node3 = new Node(radioTransfer3):(3, 2, 4, true,2);
+		radioTransfer2.newFirstNode(node3);
+		radioTransfer4.newSecondNode(node3);
+		self.MobilityModelDel() after(liveDuration);
+	}
+	
+	msgsrv MobilityModelDel() {
+		radioTransfer2.delFirstNode();   //node3
+		radioTransfer4.delSecondNode();  //node3
+	}
+	
+}
+
+
+main {
+	RadioTransfer radioTransfer1():(node2, node4,true,true);  
+	RadioTransfer radioTransfer2():(null, node1,false,true); //first node will be node3  
+	RadioTransfer radioTransfer4():(node1, null,true,false); //second node will be node3 
+			
+							//myId, backOff, myDest,chIdle, myRate
+	Node node1():(radioTransfer1, 1, 2, 2, true,2);   
+	Node node2():(radioTransfer2, 2, 5, 3, true,5);
+	Node node4():(radioTransfer4, 4, 5, 1, true,5);
+	
+	Network network(radioTransfer1,radioTransfer2,radioTransfer4, node2, node4):(3,10); 
+}
+
+
+
