@@ -41,15 +41,15 @@ public class RebecaToRILTest {
 
 	@Test
 	public void generateDiningPhilosophers() {
-		String modelName = "DiningPhilosophers";
+		String modelName = "simpleTest";
 		File model = new File(MODEL_FILES_BASE + modelName + ".rebeca");
 		
 		Set<CompilerExtension> extension = new HashSet<CompilerExtension>();
 		Pair<RebecaModel, SymbolTable> compilationResult = 
-				compileModel(model, extension, CoreVersion.CORE_2_1);
+				compileModel(model, extension, CoreVersion.CORE_2_3);
 		
 		RILModel transformModel = 
-				rebeca2RIL.transformModel(compilationResult, extension, CoreVersion.CORE_2_1);
+				rebeca2RIL.transformModel(compilationResult, extension, CoreVersion.CORE_2_3);
 		
 		for(String methodName : transformModel.getMethodNames()) {
 			System.out.println(methodName);
