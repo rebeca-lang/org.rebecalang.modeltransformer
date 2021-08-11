@@ -82,7 +82,7 @@ public class TermPrimaryExpressionTranslator extends AbstractExpressionTranslato
 		if (isBuiltInMethod(termPrimary))
 			computedMethodName = RILUtilities.computeMethodName(castableMethodSpecification);
 		else
-			computedMethodName = RILUtilities.computeMethodName(baseType, castableMethodSpecification);
+			computedMethodName = RILUtilities.computeMethodName(castableMethodSpecification.getRebecType(), castableMethodSpecification);
 
 		if (termPrimary.getType() == CoreRebecaTypeSystem.MSGSRV_TYPE) {
 			instructions.add(createMsgSrvCallInstructionBean(baseVariable, parameterTempObjects, computedMethodName, termPrimary, instructions));
@@ -138,6 +138,7 @@ public class TermPrimaryExpressionTranslator extends AbstractExpressionTranslato
 						} catch (SymbolTableException e1) {
 							// TODO Auto-generated catch block
 							e1.printStackTrace();
+							return null;
 						}
 					}
 					else {
