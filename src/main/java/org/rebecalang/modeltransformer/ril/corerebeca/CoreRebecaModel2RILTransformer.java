@@ -43,11 +43,7 @@ public class CoreRebecaModel2RILTransformer extends AbstractRILModelTransformer 
 	}
 	
 	public void initializeTranslators() {
-		
-//		statementTranslatorContainer.registerTranslator(InstanceofExpression.class,
-//				appContext.getBean(BlockStatementTranslator.class,
-//						statementTranslatorContainer,
-//						expressionTranslatorContainer));
+
 		statementTranslatorContainer.registerTranslator(BlockStatement.class,
 				appContext.getBean(BlockStatementTranslator.class, 
 						statementTranslatorContainer,
