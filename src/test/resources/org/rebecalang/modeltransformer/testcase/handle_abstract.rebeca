@@ -1,0 +1,52 @@
+interface I1 {
+
+}
+
+abstract reactiveclass R1 implements I1 (1) {
+    statevars {
+		int var_1;
+	}
+
+	R1() {
+        //i1test();
+	}
+
+	msgsrv r1msg() {
+
+	}
+
+	abstract msgsrv i1test();
+}
+
+reactiveclass R2 extends R1 (2) {
+
+    knownrebecs {
+        R2 adj_r2;
+    }
+
+    statevars {
+        int var_2;
+    }
+
+    R2() {
+        i1test();
+    }
+
+    msgsrv i1test() {
+        int a = 2;
+        R1 test_r1 = adj_r2;
+        adj_r2.xxx();
+        test_r1.xxx();
+    }
+
+    msgsrv xxx() {
+
+    }
+}
+
+
+main {
+    R2 r2(r2_1):();
+    R2 r2_1(r2):();
+
+}
