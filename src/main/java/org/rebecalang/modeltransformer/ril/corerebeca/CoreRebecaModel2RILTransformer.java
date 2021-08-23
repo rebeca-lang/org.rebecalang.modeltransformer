@@ -5,27 +5,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.rebecalang.compiler.modelcompiler.SymbolTable;
-import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.BinaryExpression;
-import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.BlockStatement;
-import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.BreakStatement;
-import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ConditionalStatement;
-import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ConstructorDeclaration;
-import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ContinueStatement;
-import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.DotPrimary;
-import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.FieldDeclaration;
-import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ForStatement;
-import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Literal;
-import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.MethodDeclaration;
-import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.MsgsrvDeclaration;
-import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.NonDetExpression;
-import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.PlusSubExpression;
-import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ReactiveClassDeclaration;
-import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.RebecaModel;
-import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ReturnStatement;
-import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.SwitchStatement;
-import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.TermPrimary;
-import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.UnaryExpression;
-import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.WhileStatement;
+import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.*;
 import org.rebecalang.compiler.utils.CompilerExtension;
 import org.rebecalang.compiler.utils.CoreVersion;
 import org.rebecalang.compiler.utils.Pair;
@@ -46,13 +26,7 @@ import org.rebecalang.modeltransformer.ril.corerebeca.translator.ForStatementTra
 import org.rebecalang.modeltransformer.ril.corerebeca.translator.ReturnStatementTranslator;
 import org.rebecalang.modeltransformer.ril.corerebeca.translator.SwitchStatementTranslator;
 import org.rebecalang.modeltransformer.ril.corerebeca.translator.WhileStatementTranslator;
-import org.rebecalang.modeltransformer.ril.corerebeca.translator.expresiontranslator.BinaryExpressionTranslator;
-import org.rebecalang.modeltransformer.ril.corerebeca.translator.expresiontranslator.DotPrimaryExpressionTranslator;
-import org.rebecalang.modeltransformer.ril.corerebeca.translator.expresiontranslator.LiteralStatementTranslator;
-import org.rebecalang.modeltransformer.ril.corerebeca.translator.expresiontranslator.NonDetExpressionTranslator;
-import org.rebecalang.modeltransformer.ril.corerebeca.translator.expresiontranslator.PlusSubExpressionTranslator;
-import org.rebecalang.modeltransformer.ril.corerebeca.translator.expresiontranslator.TermPrimaryExpressionTranslator;
-import org.rebecalang.modeltransformer.ril.corerebeca.translator.expresiontranslator.UnaryExpressionTranslator;
+import org.rebecalang.modeltransformer.ril.corerebeca.translator.expresiontranslator.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
@@ -70,8 +44,8 @@ public class CoreRebecaModel2RILTransformer extends AbstractRILModelTransformer 
 	
 	public void initializeTranslators() {
 		
-//		statementTranslatorContainer.registerTranslator(InstanceofExpression.class, 
-//				appContext.getBean(BlockStatementTranslator.class, 
+//		statementTranslatorContainer.registerTranslator(InstanceofExpression.class,
+//				appContext.getBean(BlockStatementTranslator.class,
 //						statementTranslatorContainer,
 //						expressionTranslatorContainer));
 		statementTranslatorContainer.registerTranslator(BlockStatement.class,
@@ -113,6 +87,8 @@ public class CoreRebecaModel2RILTransformer extends AbstractRILModelTransformer 
 
 		expressionTranslatorContainer.registerTranslator(BinaryExpression.class,
 				appContext.getBean(BinaryExpressionTranslator.class, expressionTranslatorContainer));
+		expressionTranslatorContainer.registerTranslator(InstanceofExpression.class,
+				appContext.getBean(InstanceofExpressionTranslator.class, expressionTranslatorContainer));
 		expressionTranslatorContainer.registerTranslator(Literal.class, 
 				appContext.getBean(LiteralStatementTranslator.class, expressionTranslatorContainer));
 		expressionTranslatorContainer.registerTranslator(DotPrimary.class,
