@@ -79,6 +79,9 @@ public class TermPrimaryExpressionTranslator extends AbstractExpressionTranslato
 				argumentsType, symbolTable);
 
 		String computedMethodName;
+
+		if (castableMethodSpecification == null) return null;
+
 		if (isBuiltInMethod(termPrimary))
 			computedMethodName = RILUtilities.computeMethodName(castableMethodSpecification);
 		else

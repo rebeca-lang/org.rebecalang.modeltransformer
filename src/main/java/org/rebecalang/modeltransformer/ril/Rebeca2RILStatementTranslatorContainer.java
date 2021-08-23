@@ -29,8 +29,8 @@ public class Rebeca2RILStatementTranslatorContainer {
 	}
 
 	public void translate(Statement statement, ArrayList<InstructionBean> instructions) {
-
-		if(statement instanceof Expression)
+		if (statement == null) return;
+		if (statement instanceof Expression)
 			expressionTranslatorContainer.translate((Expression) statement, instructions);
 		else
 			translators.get(statement.getClass()).translate(statement , instructions);

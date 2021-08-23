@@ -1,9 +1,11 @@
 package org.rebecalang.modeltransformer;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.rebecalang.compiler.CompilerConfig;
 import org.rebecalang.compiler.modelcompiler.RebecaModelCompiler;
@@ -51,14 +53,7 @@ public class RebecaToRILInheritanceTest {
         RILModel transformModel =
                 rebeca2RIL.transformModel(compilationResult, extension, CoreVersion.CORE_2_3);
 
-        for(String methodName : transformModel.getMethodNames()) {
-            System.out.println(methodName);
-            int counter = 0;
-            for(InstructionBean instruction : transformModel.getInstructionList(methodName)) {
-                System.out.println("" + counter++ +":" + instruction);
-            }
-            System.out.println("...............................................");
-        }
+        printAllMethods(transformModel);
     }
 
     @Test
@@ -73,6 +68,28 @@ public class RebecaToRILInheritanceTest {
         RILModel transformModel =
                 rebeca2RIL.transformModel(compilationResult, extension, CoreVersion.CORE_2_3);
 
+        printAllMethods(transformModel);
+    }
+
+    @Test
+    public void generateAbstractResult() {
+        String modelName = "handle_abstract";
+        File model = new File(MODEL_FILES_BASE + modelName + ".rebeca");
+
+        Set<CompilerExtension> extension = new HashSet<CompilerExtension>();
+        Pair<RebecaModel, SymbolTable> compilationResult =
+                compileModel(model, extension, CoreVersion.CORE_2_3);
+
+        RILModel transformModel =
+                rebeca2RIL.transformModel(compilationResult, extension, CoreVersion.CORE_2_3);
+
+        printAllMethods(transformModel);
+
+        printExceptions();
+        Assertions.assertTrue(exceptionContainer.exceptionsIsEmpty());
+    }
+
+    public void printAllMethods(RILModel transformModel) {
         for(String methodName : transformModel.getMethodNames()) {
             System.out.println(methodName);
             int counter = 0;
@@ -81,5 +98,16 @@ public class RebecaToRILInheritanceTest {
             }
             System.out.println("...............................................");
         }
+    }
+
+    private void printExceptions() {
+        Collection<Set<Exception>> exceptions = exceptionContainer.getExceptions().values();
+        for (Set<Exception> exceptionCollection: exceptions) {
+            for (Exception exception: exceptionCollection) {
+                System.out.println(exception);
+            }
+
+        }
+
     }
 }
