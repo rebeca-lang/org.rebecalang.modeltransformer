@@ -108,7 +108,7 @@ public class CoreRebecaModel2RILTransformer extends AbstractRILModelTransformer 
 			CoreVersion coreVersion) {
 
 		RILModel transformedRILModel = new RILModel();
-		
+
 		RebecaModel rebecaModel = model.getFirst();
 		
 		statementTranslatorContainer.setSymbolTable(model.getSecond());

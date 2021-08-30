@@ -53,7 +53,7 @@ public class Rebeca2RILModelTransformer {
 		} else {
 			modelTransformer = coreRebecaModelTransformer;
 		}
-		
+
 		return modelTransformer.transformModel(model, extension, coreVersion);
 		
 	}

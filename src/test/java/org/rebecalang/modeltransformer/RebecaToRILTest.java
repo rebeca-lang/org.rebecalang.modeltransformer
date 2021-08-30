@@ -41,7 +41,7 @@ public class RebecaToRILTest {
 
 	@Test
 	public void generateDiningPhilosophers() {
-		String modelName = "simpleTest";
+		String modelName = "DiningPhilosophers";
 		File model = new File(MODEL_FILES_BASE + modelName + ".rebeca");
 		
 		Set<CompilerExtension> extension = new HashSet<CompilerExtension>();
