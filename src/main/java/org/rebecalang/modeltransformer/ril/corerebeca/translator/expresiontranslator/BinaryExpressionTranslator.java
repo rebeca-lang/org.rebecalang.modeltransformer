@@ -47,7 +47,7 @@ public class BinaryExpressionTranslator extends AbstractExpressionTranslator {
 			instructions.add(assignmentInstruction);
 			return tempVariable;
 		}
-		
+
 		return null;
 	}
 

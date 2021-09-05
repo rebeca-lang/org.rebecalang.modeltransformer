@@ -1,0 +1,94 @@
+reactiveclass Env (3) {
+  statevars { int gasLevel, duration; }
+  knownrebecs { Scientist sci; Sensor s1, s2;}
+  Env() { self.run(); }
+  msgsrv run() {
+    int newLevel = ?(1,2,3,4,5);
+    if (newLevel == gasLevel)
+      duration = duration + 1;
+    else
+      duration = 0;
+    gasLevel = newLevel;
+    if (duration == 15 && gasLevel > 4)
+      sci.die();
+    else
+      self.run() after (1);
+  }
+  msgsrv reportLevel() {
+    sender.report(gasLevel);
+  }
+}
+reactiveclass Sensor (3) {
+  statevars { int period; }
+  knownrebecs { 
+    Controller ctrl;
+    Env env;
+  }
+  Sensor(int myPeriod) {
+    period = myPeriod;
+    env.reportLevel();
+  }
+  msgsrv report(int value) {
+    ctrl.report(value) after(1);
+    env.reportLevel() after(period);
+  }
+}
+reactiveclass Controller (4) {
+
+  statevars {
+    int sensorValue0, sensorValue1;
+    boolean scientistAck;
+  }
+  knownrebecs {
+    Sensor sensor0, sensor1;
+    Scientist scientist;
+    Rescue rescue;
+  }
+  Controller() { self.checkSensors(); }
+  msgsrv report(int value) {
+    if (sender == sensor0)
+      sensorValue0 = value;
+    else
+      sensorValue1 = value;
+  }
+  msgsrv checkSensors() {
+    if (sensorValue0 > 4 || sensorValue1 > 4) {
+      scientist.abortPlan() after(2);
+      self.checkScientistAck() after(5);
+    }
+    self.checkSensors() after (10);
+  }
+  msgsrv ack() {
+    scientistAck = true;
+  }
+  msgsrv checkScientistAck() {
+    if (!scientistAck)
+      rescue.go() after(2);
+    scientistAck = false;
+  }
+}
+reactiveclass Scientist (3) {
+  knownrebecs { Controller ctrl; }
+  statevars{}
+  msgsrv abortPlan() {
+    ctrl.ack() after(2);
+  }
+  msgsrv die() { }
+}
+reactiveclass Rescue {
+  knownrebecs{}
+  statevars{}
+  msgsrv go() { }
+}
+main {
+  Env env(scientist):();
+  Sensor sensor0(ctrl):(5);
+  Sensor sensor1(ctrl):(7);
+  Scientist scientist(ctrl):();
+  Rescue rescue(ctrl):();
+  Controller ctrl(sensor0, sensor1, scientist, rescue):();
+}
+
+// (mc initState |=t ([] ~ ("scientist" hasReceived Scientist-die) ) in time <= 1000 .)
+
+// (mc-tctl initState |= AG (Env-gasLevel of "env" <= 4) implies not EF ("ctrl" hasSent Scientist-abortPlan) .)

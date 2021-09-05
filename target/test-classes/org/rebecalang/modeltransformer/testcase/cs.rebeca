@@ -1,0 +1,108 @@
+reactiveclass Server (3) {
+  knownrebecs { 
+    Server next;
+  }
+  statevars {
+    boolean busy;
+    boolean isLastNode;
+  }
+  Server(boolean last) {
+    busy = false;
+    isLastNode = last;
+  }
+  msgsrv stream(ReqHandler h, Client c) {
+    if (!busy) {
+      busy = true;
+      c.streamingStart();
+      h.streamingStart();
+      self.streamingDone() after(2000);
+    }
+  }
+  msgsrv areYouFree(ReqHandler h) {
+    if (!isLastNode)
+      next.areYouFree(h);
+    if (!busy)
+      h.iAmFree(self);
+  }
+  msgsrv streamingDone() {
+    busy = false;
+  }
+}
+
+reactiveclass ServicePool (9) {
+  knownrebecs {
+    Server head;
+  }
+  statevars { int counter; }
+  ServicePool() { counter = 0; }
+  msgsrv findFreeServer(ReqHandler h) {
+    head.areYouFree(h);
+  }
+  msgsrv createServer() {
+    head = new Server(head):(false);
+    counter = counter + 1;
+  }
+}
+
+reactiveclass ReqHandler (9) {
+  knownrebecs {
+    ServicePool sp;
+    Client client;
+  }
+  statevars{
+    boolean done;
+    boolean waitingForStream;
+  }
+  ReqHandler() {
+    done = false;
+    self.startReq() ;
+  }
+  msgsrv startReq() {
+    sp.findFreeServer(self);
+    self.timeOut() after(150);
+  }
+  msgsrv iAmFree(Server s) {
+    if (waitingForStream)
+      self.iAmFree(s) after (5);
+    else if (!done) {
+      waitingForStream = true;
+      self.timeOut() after(50);
+      s.stream(self, client);
+    }
+  }
+  msgsrv streamingStart() {
+    done = true;
+  }
+  msgsrv timeOut() {
+    if (waitingForStream)
+      waitingForStream = false;   
+    else if (!done) {
+      sp.createServer();
+      self.startReq();
+    }
+  }
+}
+
+reactiveclass Client (8) {
+  knownrebecs {
+    ServicePool sp;
+    ReqHandler handler;
+  }
+  statevars { }
+  Client() {
+    self.makeRequest();
+  }
+  msgsrv makeRequest() {
+    handler = new ReqHandler(self, sp):();
+    self.makeRequest() after(500);
+  }
+  msgsrv streamingStart() { }
+}
+
+main {
+  Server s(null):(true);
+  ServicePool sp(s):();
+  Client c1(sp, null):();
+  Client c2(sp, null):();
+  Client c3(sp, null):();
+}

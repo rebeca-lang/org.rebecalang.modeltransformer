@@ -1,0 +1,109 @@
+/* protocol IEEE 802.11 RTS/CTS : csma/ca wireless collision avoidance*/
+
+reactiveclass RadioTransfer (6) {
+	knownrebecs {
+		Node node1;
+		Node node2;
+	}
+	statevars {	boolean k;}
+
+	RadioTransfer() { }
+	
+	msgsrv passRTS(byte sndr,byte rcvr) {		
+		delay(2);
+		node1.rcvRTS(sndr,rcvr);
+		node2.rcvRTS(sndr,rcvr);
+	}
+	
+	msgsrv passCTS(byte sndr,byte rcvr) {
+		delay(2);
+		node1.rcvCTS(sndr,rcvr);
+		node2.rcvCTS(sndr,rcvr);
+	}
+	
+	msgsrv passData(byte sndr,byte rcvr) {		
+		node1.rcvData(sndr,rcvr); 
+	}					  //becuase of ring topology
+}
+
+reactiveclass Node (6) {
+	knownrebecs {
+		RadioTransfer radioTransfer;
+	}
+	
+	statevars {
+		byte backOff;
+		byte dest;
+		byte id;
+		byte dataRate;
+		boolean channleIdle;
+	}
+	
+	Node(byte myId2, byte myDelayTime,byte myDest,boolean chIdle,byte myRate) {
+		id = myId2;
+		backOff = myDelayTime;
+		dest = myDest;
+		channleIdle = chIdle;
+		dataRate = myRate;
+		self.sendRTS() after(dataRate);  		
+	}
+	
+	msgsrv sendRTS() {
+		radioTransfer = new RadioTransfer(null, self):(1);
+		if (channleIdle) {
+			radioTransfer.passRTS(id, dest);
+		}  
+		else {
+			self.sendRTS() after(backOff);   
+		}		// backoff must be a rand num
+	}
+	
+	msgsrv sendData() {
+		radioTransfer.passData(id, dest);
+		self.sendRTS() after(dataRate);  
+	}
+
+	msgsrv rcvRTS(byte sndr,byte rcvr) {
+		//channleIdle = false;
+		if(rcvr == id) {
+			if( channleIdle ){
+				channleIdle = false;
+				radioTransfer.passCTS(id, sndr);
+			}	
+			else{
+				self.rcvRTS(sndr,rcvr) after(backOff);  // backoff must be a rand num
+			}
+		}
+		else {
+			channleIdle = false;
+		}		
+	}
+	
+	msgsrv rcvCTS(byte sndr,byte rcvr) {
+		if(rcvr == id){
+			self.sendData();	
+		}
+		else {
+			channleIdle = true;
+		}
+	}
+	
+	msgsrv rcvData(byte sndr,byte rcvr) {
+		channleIdle = true;
+	}
+}
+
+main {
+	RadioTransfer radioTransfer1(node2, node4):();  
+	RadioTransfer radioTransfer2(node3, node1):();  
+	RadioTransfer radioTransfer3(node4, node2):();  
+	RadioTransfer radioTransfer4(node1, node3):();  
+			//myId, backOff, myDest,chIdle, myRate
+	Node node1(radioTransfer1):(1, 2, 2, true,2);   
+	Node node2(radioTransfer2):(2, 5, 3, true,5);
+	Node node3(radioTransfer3):(3, 2, 4, true,2);
+	Node node4(radioTransfer4):(4, 5, 1, true,5);
+}
+
+
+

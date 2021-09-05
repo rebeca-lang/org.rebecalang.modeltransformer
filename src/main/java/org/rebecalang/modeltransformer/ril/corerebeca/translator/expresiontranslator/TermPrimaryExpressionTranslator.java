@@ -6,12 +6,10 @@ import java.util.List;
 import org.rebecalang.compiler.modelcompiler.SymbolTable;
 import org.rebecalang.compiler.modelcompiler.SymbolTable.MethodInSymbolTableSpecifier;
 import org.rebecalang.compiler.modelcompiler.SymbolTableException;
+import org.rebecalang.compiler.modelcompiler.abstractrebeca.AbstractTypeSystem;
 import org.rebecalang.compiler.modelcompiler.corerebeca.CoreRebecaLabelUtility;
 import org.rebecalang.compiler.modelcompiler.corerebeca.CoreRebecaTypeSystem;
-import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Expression;
-import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ReactiveClassDeclaration;
-import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.TermPrimary;
-import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Type;
+import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.*;
 import org.rebecalang.compiler.utils.CodeCompilationException;
 import org.rebecalang.modeltransformer.ril.RILUtilities;
 import org.rebecalang.modeltransformer.ril.Rebeca2RILExpressionTranslatorContainer;
@@ -81,10 +79,13 @@ public class TermPrimaryExpressionTranslator extends AbstractExpressionTranslato
 				argumentsType, symbolTable);
 
 		String computedMethodName;
+
+		if (castableMethodSpecification == null) return null;
+
 		if (isBuiltInMethod(termPrimary))
 			computedMethodName = RILUtilities.computeMethodName(castableMethodSpecification);
 		else
-			computedMethodName = RILUtilities.computeMethodName(baseType, castableMethodSpecification);
+			computedMethodName = RILUtilities.computeMethodName(castableMethodSpecification.getRebecType(), castableMethodSpecification);
 
 		if (termPrimary.getType() == CoreRebecaTypeSystem.MSGSRV_TYPE) {
 			instructions.add(createMsgSrvCallInstructionBean(baseVariable, parameterTempObjects, computedMethodName, termPrimary, instructions));
@@ -121,18 +122,36 @@ public class TermPrimaryExpressionTranslator extends AbstractExpressionTranslato
 
 	private MethodInSymbolTableSpecifier getMethodFromSymbolTable(Type baseType, TermPrimary termPrimary,
 			ArrayList<Type> argumentsType, SymbolTable symbolTable) {
-		try {
-			return symbolTable.getCastableMethodSpecification(baseType, termPrimary.getName(), argumentsType);
-		} catch (SymbolTableException e) {
+
+		MethodInSymbolTableSpecifier methodInSymbolTableSpecifier = null;
+		Type curType = baseType;
+
+		while(true) {
 			try {
-				return symbolTable.getCastableMethodSpecification(CoreRebecaTypeSystem.NO_TYPE, termPrimary.getName(),
-						argumentsType);
-			} catch (SymbolTableException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
+				methodInSymbolTableSpecifier = symbolTable.getCastableMethodSpecification(curType, termPrimary.getName(), argumentsType);
+				return methodInSymbolTableSpecifier;
+			}
+			catch(SymbolTableException ste) {
+				try {
+					ReactiveClassDeclaration metaData = (ReactiveClassDeclaration) curType.getTypeSystem().getMetaData(curType);
+					if (metaData.getExtends() == null) {
+						try {
+							return symbolTable.getCastableMethodSpecification(CoreRebecaTypeSystem.NO_TYPE, termPrimary.getName(),
+							argumentsType);
+						} catch (SymbolTableException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+							return null;
+						}
+					}
+					else {
+						curType = metaData.getExtends();
+					}
+				} catch (CodeCompilationException e) {
+					e.printStackTrace();
+				}
 			}
 		}
-		return null;
 	}
 
 	private boolean isAssertionMethod(TermPrimary statement) {

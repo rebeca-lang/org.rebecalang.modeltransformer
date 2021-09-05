@@ -4,14 +4,19 @@ import java.util.ArrayList;
 
 import org.rebecalang.compiler.modelcompiler.corerebeca.CoreRebecaTypeSystem;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Expression;
+import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ReactiveClassDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.TermPrimary;
+import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Type;
+import org.rebecalang.compiler.modelcompiler.timedrebeca.TimedRebecaTypeSystem;
 import org.rebecalang.compiler.modelcompiler.timedrebeca.objectmodel.TimedRebecaParentSuffixPrimary;
+import org.rebecalang.compiler.utils.CodeCompilationException;
 import org.rebecalang.modeltransformer.ril.Rebeca2RILExpressionTranslatorContainer;
 import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.InstructionBean;
 import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.Variable;
 import org.rebecalang.modeltransformer.ril.corerebeca.translator.expresiontranslator.TermPrimaryExpressionTranslator;
 import org.rebecalang.modeltransformer.ril.timedrebeca.rilinstruction.CallTimedMsgSrvInstructionBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -24,6 +29,27 @@ public class TimedRebecaTermPrimaryExpressionTranslator extends TermPrimaryExpre
 	public TimedRebecaTermPrimaryExpressionTranslator(
 			Rebeca2RILExpressionTranslatorContainer expressionTranslatorContainer) {
 		super(expressionTranslatorContainer);
+	}
+
+	@Autowired
+	@Qualifier("TIMED_REBECA")
+	TimedRebecaTypeSystem timedRebecaTypeSystem;
+
+	@Override
+	public Object translate(Expression expression, ArrayList<InstructionBean> instructions) {
+		ReactiveClassDeclaration reactiveClassDeclaration = expressionTranslatorContainer
+				.getReactiveClassDeclaration();
+		Type baseType = null;
+		try {
+			baseType = timedRebecaTypeSystem.getType(reactiveClassDeclaration.getName());
+		} catch (CodeCompilationException e) {
+			e.printStackTrace();
+		}
+		Variable base = null;
+		if (!isBuiltInMethod(expression))
+			base = new Variable("self");
+
+		return translate(baseType, base, (TermPrimary) expression, instructions);
 	}
 
 	@Override
