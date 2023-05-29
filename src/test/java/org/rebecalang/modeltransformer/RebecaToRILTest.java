@@ -60,5 +60,4 @@ public class RebecaToRILTest {
 			System.out.println("...............................................");
 		}
 	}
-
 }
