@@ -1,4 +1,4 @@
-package org.rebecalang.modeltransformer.ril.corerebeca.translator.expresiontranslator;
+package org.rebecalang.modeltransformer.ril.corerebeca.translator.expressiontranslator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -108,7 +108,6 @@ public class TermPrimaryExpressionTranslator extends AbstractExpressionTranslato
 					computedMethodName);
 			methodCallInstructionBean.setParameters(parameterTempObjects);
 			methodCallInstructionBean.setFunctionCallResult(tempVariable);
-			methodCallInstructionBean.setParametersNames(castableMethodSpecification.getArgumentsNames());
 			instructions.add(methodCallInstructionBean);
 		}
 

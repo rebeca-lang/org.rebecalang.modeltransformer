@@ -1,4 +1,4 @@
-package org.rebecalang.modeltransformer.ril.corerebeca.translator.expresiontranslator;
+package org.rebecalang.modeltransformer.ril.corerebeca.translator.expressiontranslator;
 
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Expression;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.InstanceofExpression;

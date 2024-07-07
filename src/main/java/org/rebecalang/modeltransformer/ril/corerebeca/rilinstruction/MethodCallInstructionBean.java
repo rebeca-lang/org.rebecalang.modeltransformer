@@ -3,11 +3,8 @@ package org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MethodCallInstructionBean extends InstructionBean {
+public class MethodCallInstructionBean extends AbstractCallingInstructionBean {
 
-	private	Variable base;
-	private String methodName;
-	private List<Object> parameters;
 	private List<String> parametersNames;
 	private Variable functionCallResult;
 
@@ -16,27 +13,8 @@ public class MethodCallInstructionBean extends InstructionBean {
 	}
 
 	public MethodCallInstructionBean(Variable base, String methodName, List<Object> parameters, Variable functionCallResult) {
-		super();
-		this.base = base;
-		this.methodName = methodName;
-		this.parameters = parameters;
+		super(base, methodName, parameters);
 		this.setFunctionCallResult(functionCallResult);
-	}
-
-	public Variable getBase() {
-		return base;
-	}
-
-	public void setBase(Variable base) {
-		this.base = base;
-	}
-
-	public String getMethodName() {
-		return methodName;
-	}
-
-	public void setMethodName(String methodName) {
-		this.methodName = methodName;
 	}
 
 	@Override
@@ -48,18 +26,6 @@ public class MethodCallInstructionBean extends InstructionBean {
 		if (functionCallResult != null)
 			string = functionCallResult + " = " + string;
 		return string + ")";
-	}
-
-	public List<Object> getParameters() {
-		return parameters;
-	}
-
-	public void setParameters(List<Object> parameters) {
-		this.parameters = parameters;
-	}
-
-	public void addParameter(Object parameter) {
-		this.parameters.add(parameter);
 	}
 
 	public Variable getFunctionCallResult() {

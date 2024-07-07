@@ -1,4 +1,4 @@
-package org.rebecalang.modeltransformer.ril.corerebeca.translator.expresiontranslator;
+package org.rebecalang.modeltransformer.ril.corerebeca.translator.expressiontranslator;
 
 import java.util.ArrayList;
 
