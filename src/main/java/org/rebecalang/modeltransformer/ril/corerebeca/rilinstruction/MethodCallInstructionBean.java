@@ -15,7 +15,7 @@ public class MethodCallInstructionBean extends InstructionBean {
 		this(base, methodName, new ArrayList<Object>(), null);
 	}
 
-	public MethodCallInstructionBean(Variable base, String methodName, ArrayList<Object> parameters, Variable functionCallResult) {
+	public MethodCallInstructionBean(Variable base, String methodName, List<Object> parameters, Variable functionCallResult) {
 		super();
 		this.base = base;
 		this.methodName = methodName;
@@ -54,7 +54,7 @@ public class MethodCallInstructionBean extends InstructionBean {
 		return parameters;
 	}
 
-	public void setParameters(ArrayList<Object> parameters) {
+	public void setParameters(List<Object> parameters) {
 		this.parameters = parameters;
 	}
 

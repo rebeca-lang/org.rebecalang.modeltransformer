@@ -42,8 +42,7 @@ public class TermPrimaryExpressionTranslator extends AbstractExpressionTranslato
 
 	@Override
 	public Object translate(Expression expression, ArrayList<InstructionBean> instructions) {
-		ReactiveClassDeclaration reactiveClassDeclaration = expressionTranslatorContainer
-				.getReactiveClassDeclaration();
+		ReactiveClassDeclaration reactiveClassDeclaration = expressionTranslatorContainer.getReactiveClassDeclaration();
 		Type baseType = null;
 		try {
 			baseType = coreRebecaTypeSystem.getType(reactiveClassDeclaration.getName());
@@ -81,13 +80,17 @@ public class TermPrimaryExpressionTranslator extends AbstractExpressionTranslato
 				argumentsType, symbolTable);
 
 		String computedMethodName;
+		
+		if (castableMethodSpecification == null) assert false;//return null;
+		
 		if (isBuiltInMethod(termPrimary))
 			computedMethodName = RILUtilities.computeMethodName(castableMethodSpecification);
 		else
-			computedMethodName = RILUtilities.computeMethodName(baseType, castableMethodSpecification);
+			computedMethodName = RILUtilities.computeMethodName(castableMethodSpecification.getRebecType(), castableMethodSpecification);
 
 		if (termPrimary.getType() == CoreRebecaTypeSystem.MSGSRV_TYPE) {
-			instructions.add(createMsgSrvCallInstructionBean(baseVariable, parameterTempObjects, computedMethodName, termPrimary, instructions));
+			instructions.add(createMsgSrvCallInstructionBean(baseVariable, parameterTempObjects, computedMethodName,
+					termPrimary, instructions));
 			return null;
 		}
 
@@ -114,25 +117,43 @@ public class TermPrimaryExpressionTranslator extends AbstractExpressionTranslato
 	}
 
 	protected CallMsgSrvInstructionBean createMsgSrvCallInstructionBean(Variable baseVariable,
-			ArrayList<Object> parameterTempObjects, String computedMethodName,
-			TermPrimary termPrimary, ArrayList<InstructionBean> instructions) {
+			ArrayList<Object> parameterTempObjects, String computedMethodName, TermPrimary termPrimary,
+			ArrayList<InstructionBean> instructions) {
 		return new CallMsgSrvInstructionBean(baseVariable, computedMethodName, parameterTempObjects);
 	}
 
 	private MethodInSymbolTableSpecifier getMethodFromSymbolTable(Type baseType, TermPrimary termPrimary,
 			ArrayList<Type> argumentsType, SymbolTable symbolTable) {
-		try {
-			return symbolTable.getCastableMethodSpecification(baseType, termPrimary.getName(), argumentsType);
-		} catch (SymbolTableException e) {
+
+		MethodInSymbolTableSpecifier methodInSymbolTableSpecifier = null;
+		Type curType = baseType;
+
+		while (true) {
 			try {
-				return symbolTable.getCastableMethodSpecification(CoreRebecaTypeSystem.NO_TYPE, termPrimary.getName(),
-						argumentsType);
-			} catch (SymbolTableException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
+				methodInSymbolTableSpecifier = symbolTable.getCastableMethodSpecification(curType,
+						termPrimary.getName(), argumentsType);
+				return methodInSymbolTableSpecifier;
+			} catch (SymbolTableException ste) {
+				try {
+					ReactiveClassDeclaration metaData = (ReactiveClassDeclaration) curType.getTypeSystem()
+							.getMetaData(curType);
+					if (metaData.getExtends() == null) {
+						try {
+							return symbolTable.getCastableMethodSpecification(CoreRebecaTypeSystem.NO_TYPE,
+									termPrimary.getName(), argumentsType);
+						} catch (SymbolTableException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+							return null;
+						}
+					} else {
+						curType = metaData.getExtends();
+					}
+				} catch (CodeCompilationException e) {
+					e.printStackTrace();
+				}
 			}
 		}
-		return null;
 	}
 
 	private boolean isAssertionMethod(TermPrimary statement) {
@@ -143,10 +164,12 @@ public class TermPrimaryExpressionTranslator extends AbstractExpressionTranslato
 		int size = statement.getParentSuffixPrimary().getArguments().size();
 		if (size != 1 && size != 2)
 			return false;
-		if (!statement.getParentSuffixPrimary().getArguments().get(0).getType().canTypeCastTo(CoreRebecaTypeSystem.BOOLEAN_TYPE))
+		if (!statement.getParentSuffixPrimary().getArguments().get(0).getType()
+				.canTypeCastTo(CoreRebecaTypeSystem.BOOLEAN_TYPE))
 			return false;
 		if (size == 2)
-			if (!statement.getParentSuffixPrimary().getArguments().get(1).getType().canTypeCastTo(CoreRebecaTypeSystem.STRING_TYPE))
+			if (!statement.getParentSuffixPrimary().getArguments().get(1).getType()
+					.canTypeCastTo(CoreRebecaTypeSystem.STRING_TYPE))
 				return false;
 		return true;
 	}
@@ -168,9 +191,11 @@ public class TermPrimaryExpressionTranslator extends AbstractExpressionTranslato
 			return false;
 		if (statement.getParentSuffixPrimary().getArguments().size() != 2)
 			return false;
-		if (!statement.getParentSuffixPrimary().getArguments().get(0).getType().canTypeCastTo(CoreRebecaTypeSystem.DOUBLE_TYPE))
+		if (!statement.getParentSuffixPrimary().getArguments().get(0).getType()
+				.canTypeCastTo(CoreRebecaTypeSystem.DOUBLE_TYPE))
 			return false;
-		if (!statement.getParentSuffixPrimary().getArguments().get(1).getType().canTypeCastTo(CoreRebecaTypeSystem.DOUBLE_TYPE))
+		if (!statement.getParentSuffixPrimary().getArguments().get(1).getType()
+				.canTypeCastTo(CoreRebecaTypeSystem.DOUBLE_TYPE))
 			return false;
 		return true;
 	}
@@ -182,7 +207,8 @@ public class TermPrimaryExpressionTranslator extends AbstractExpressionTranslato
 			return false;
 		if (statement.getParentSuffixPrimary().getArguments().size() != 1)
 			return false;
-		if (!statement.getParentSuffixPrimary().getArguments().get(0).getType().canTypeCastTo(CoreRebecaTypeSystem.DOUBLE_TYPE))
+		if (!statement.getParentSuffixPrimary().getArguments().get(0).getType()
+				.canTypeCastTo(CoreRebecaTypeSystem.DOUBLE_TYPE))
 			return false;
 		return true;
 	}
