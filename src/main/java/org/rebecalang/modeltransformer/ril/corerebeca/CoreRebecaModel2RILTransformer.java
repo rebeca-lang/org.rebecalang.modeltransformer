@@ -8,6 +8,7 @@ import org.rebecalang.compiler.modelcompiler.SymbolTable;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.BinaryExpression;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.BlockStatement;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.BreakStatement;
+import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.CastExpression;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ConditionalStatement;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ConstructorDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ContinueStatement;
@@ -48,6 +49,7 @@ import org.rebecalang.modeltransformer.ril.corerebeca.translator.ReturnStatement
 import org.rebecalang.modeltransformer.ril.corerebeca.translator.SwitchStatementTranslator;
 import org.rebecalang.modeltransformer.ril.corerebeca.translator.WhileStatementTranslator;
 import org.rebecalang.modeltransformer.ril.corerebeca.translator.expressiontranslator.BinaryExpressionTranslator;
+import org.rebecalang.modeltransformer.ril.corerebeca.translator.expressiontranslator.CastExpressionTranslator;
 import org.rebecalang.modeltransformer.ril.corerebeca.translator.expressiontranslator.DotPrimaryExpressionTranslator;
 import org.rebecalang.modeltransformer.ril.corerebeca.translator.expressiontranslator.InstanceofExpressionTranslator;
 import org.rebecalang.modeltransformer.ril.corerebeca.translator.expressiontranslator.LiteralStatementTranslator;
@@ -119,6 +121,8 @@ public class CoreRebecaModel2RILTransformer extends AbstractRILModelTransformer 
 				appContext.getBean(DotPrimaryExpressionTranslator.class, expressionTranslatorContainer));
 		expressionTranslatorContainer.registerTranslator(UnaryExpression.class,
 				appContext.getBean(UnaryExpressionTranslator.class, expressionTranslatorContainer));
+		expressionTranslatorContainer.registerTranslator(CastExpression.class,
+				appContext.getBean(CastExpressionTranslator.class, expressionTranslatorContainer));
 		expressionTranslatorContainer.registerTranslator(PlusSubExpression.class,
 				appContext.getBean(PlusSubExpressionTranslator.class, expressionTranslatorContainer));
 		expressionTranslatorContainer.registerTranslator(NonDetExpression.class,
