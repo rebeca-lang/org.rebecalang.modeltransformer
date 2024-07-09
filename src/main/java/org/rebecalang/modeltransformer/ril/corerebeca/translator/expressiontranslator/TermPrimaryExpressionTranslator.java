@@ -17,7 +17,7 @@ import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Type;
 import org.rebecalang.compiler.utils.CodeCompilationException;
 import org.rebecalang.modeltransformer.ril.RILUtilities;
 import org.rebecalang.modeltransformer.ril.Rebeca2RILExpressionTranslatorContainer;
-import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.CallMsgSrvInstructionBean;
+import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.MsgsrvCallInstructionBean;
 import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.DeclarationInstructionBean;
 import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.ExternalMethodCallInstructionBean;
 import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.InstructionBean;
@@ -122,10 +122,10 @@ public class TermPrimaryExpressionTranslator extends AbstractExpressionTranslato
 
 	}
 
-	protected CallMsgSrvInstructionBean createMsgSrvCallInstructionBean(Variable baseVariable,
+	protected MsgsrvCallInstructionBean createMsgSrvCallInstructionBean(Variable baseVariable,
 			Map<String, Object> parameters, String computedMethodName, TermPrimary termPrimary,
 			ArrayList<InstructionBean> instructions) {
-		return new CallMsgSrvInstructionBean(baseVariable, computedMethodName, parameters);
+		return new MsgsrvCallInstructionBean(baseVariable, computedMethodName, parameters);
 	}
 
 	private MethodInSymbolTableSpecifier getMethodFromSymbolTable(Type baseType, TermPrimary termPrimary,

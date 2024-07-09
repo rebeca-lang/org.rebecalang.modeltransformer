@@ -4,13 +4,13 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
-public class CallMsgSrvInstructionBean extends AbstractCallingInstructionBean {
+public class MsgsrvCallInstructionBean extends AbstractCallingInstructionBean {
 
-	public CallMsgSrvInstructionBean(Variable receiver, String msgsrvName) {
+	public MsgsrvCallInstructionBean(Variable receiver, String msgsrvName) {
 		this(receiver, msgsrvName, new TreeMap<String, Object>());
 	}
 
-	public CallMsgSrvInstructionBean(Variable base, String methodName, Map<String, Object> parameters) {
+	public MsgsrvCallInstructionBean(Variable base, String methodName, Map<String, Object> parameters) {
 		super(base, methodName, parameters);
 	}
 

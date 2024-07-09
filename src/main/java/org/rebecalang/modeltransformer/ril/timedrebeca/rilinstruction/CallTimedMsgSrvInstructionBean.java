@@ -2,10 +2,10 @@ package org.rebecalang.modeltransformer.ril.timedrebeca.rilinstruction;
 
 import java.util.Map;
 
-import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.CallMsgSrvInstructionBean;
+import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.MsgsrvCallInstructionBean;
 import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.Variable;
 
-public class CallTimedMsgSrvInstructionBean extends CallMsgSrvInstructionBean {
+public class CallTimedMsgSrvInstructionBean extends MsgsrvCallInstructionBean {
 
 	private Object after;
 	private Object deadline;
