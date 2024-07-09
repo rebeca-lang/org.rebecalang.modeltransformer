@@ -1,6 +1,6 @@
 package org.rebecalang.modeltransformer.ril.timedrebeca.rilinstruction;
 
-import java.util.ArrayList;
+import java.util.Map;
 
 import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.CallMsgSrvInstructionBean;
 import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.Variable;
@@ -10,14 +10,12 @@ public class CallTimedMsgSrvInstructionBean extends CallMsgSrvInstructionBean {
 	private Object after;
 	private Object deadline;
 
-	public CallTimedMsgSrvInstructionBean(Variable receiver, String msgsrvName, ArrayList<Object> parameters,
+	public CallTimedMsgSrvInstructionBean(Variable receiver, String msgsrvName, Map<String, Object> parameters,
 			Object after, Object deadline) {
 		super(receiver, msgsrvName, parameters);
 		this.after = after;
 		this.deadline = deadline;
 	}
-
-	
 
 	@Override
 	public String toString() {

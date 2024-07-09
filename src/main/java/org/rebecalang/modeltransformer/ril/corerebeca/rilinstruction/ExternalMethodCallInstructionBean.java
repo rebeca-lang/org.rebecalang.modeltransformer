@@ -1,16 +1,18 @@
 package org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction;
 
-import java.util.ArrayList;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.TreeMap;
 
 public class ExternalMethodCallInstructionBean extends AbstractCallingInstructionBean {
 
 	private Variable functionCallResult;
 
 	public ExternalMethodCallInstructionBean(Variable base, String methodName) {
-		this(base, methodName, new ArrayList<Object>(), null);
+		this(base, methodName, new TreeMap<String, Object>(), null);
 	}
 
-	public ExternalMethodCallInstructionBean(Variable base, String methodName, ArrayList<Object> parameters, Variable functionCallResult) {
+	public ExternalMethodCallInstructionBean(Variable base, String methodName, Map<String, Object> parameters, Variable functionCallResult) {
 		super(base, methodName, parameters);
 		this.setFunctionCallResult(functionCallResult);
 	}
@@ -18,10 +20,10 @@ public class ExternalMethodCallInstructionBean extends AbstractCallingInstructio
 	@Override
 	public String toString() {
 		String string = base + "." + methodName + "( ";
-		for (Object parameter: parameters) {
-			string += parameter.toString() + ", ";
+		for (Entry<String, Object> entry : parameters.entrySet()) {
+			string += entry.getKey() + "->" + entry.getValue().toString() + ", ";
 		}
-		return string + ")";
+		return string + ") -> " + functionCallResult;
 	}
 
 	public Variable getFunctionCallResult() {

@@ -1,14 +1,14 @@
 package org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction;
 
-import java.util.List;
+import java.util.Map;
 
 public abstract class AbstractCallingInstructionBean extends InstructionBean {
 	protected Variable base;
 	protected String methodName;
-	protected List<Object> parameters;
+	protected Map<String, Object> parameters;
 
 	
-	public AbstractCallingInstructionBean(Variable base, String methodName, List<Object> parameters) {
+	public AbstractCallingInstructionBean(Variable base, String methodName, Map<String, Object> parameters) {
 		super();
 		this.base = base;
 		this.methodName = methodName;
@@ -26,14 +26,14 @@ public abstract class AbstractCallingInstructionBean extends InstructionBean {
 	public void setMethodName(String methodName) {
 		this.methodName = methodName;
 	}
-	public List<Object> getParameters() {
+	public Map<String, Object> getParameters() {
 		return parameters;
 	}
-	public void setParameters(List<Object> parameters) {
+	public void setParameters(Map<String, Object> parameters) {
 		this.parameters = parameters;
 	}
-	public void addParameter(Object parameter) {
-		this.parameters.add(parameter);
+	public void addParameter(String paramName, Object paramValue) {
+		this.parameters.put(paramName, paramValue);
 	}
 
 }

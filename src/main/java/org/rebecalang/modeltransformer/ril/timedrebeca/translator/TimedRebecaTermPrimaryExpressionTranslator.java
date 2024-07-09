@@ -1,6 +1,7 @@
 package org.rebecalang.modeltransformer.ril.timedrebeca.translator;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 import org.rebecalang.compiler.modelcompiler.corerebeca.CoreRebecaTypeSystem;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Expression;
@@ -54,7 +55,7 @@ public class TimedRebecaTermPrimaryExpressionTranslator extends TermPrimaryExpre
 
 	@Override
 	protected CallTimedMsgSrvInstructionBean createMsgSrvCallInstructionBean(Variable baseVariable,
-			ArrayList<Object> parameterTempObjects, String computedMethodName, TermPrimary termPrimary,
+			Map<String, Object> parameterTempObjects, String computedMethodName, TermPrimary termPrimary,
 			ArrayList<InstructionBean> instructions) {
 		TimedRebecaParentSuffixPrimary parentSuffixPrimary = (TimedRebecaParentSuffixPrimary) termPrimary
 				.getParentSuffixPrimary();
@@ -68,7 +69,6 @@ public class TimedRebecaTermPrimaryExpressionTranslator extends TermPrimaryExpre
 			deadlineResult = expressionTranslatorContainer.translate(deadlineExpression, instructions);
 		return new CallTimedMsgSrvInstructionBean(baseVariable, computedMethodName, parameterTempObjects, afterResult,
 				deadlineResult);
-
 	}
 
 	@Override

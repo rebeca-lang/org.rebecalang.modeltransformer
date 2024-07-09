@@ -2,6 +2,8 @@ package org.rebecalang.modeltransformer.ril.corerebeca.translator.expressiontran
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import org.rebecalang.compiler.modelcompiler.SymbolTable;
 import org.rebecalang.compiler.modelcompiler.SymbolTable.MethodInSymbolTableSpecifier;
@@ -67,10 +69,11 @@ public class TermPrimaryExpressionTranslator extends AbstractExpressionTranslato
 			return (new Variable(termPrimary.getName()));
 
 		List<Expression> arguments = termPrimary.getParentSuffixPrimary().getArguments();
-		ArrayList<Object> parameterTempObjects = new ArrayList<Object>();
+		ArrayList<Object> argumentsValues = new ArrayList<Object>();
 		ArrayList<Type> argumentsType = new ArrayList<Type>();
 		for (Expression argument : arguments) {
-			parameterTempObjects.add(expressionTranslatorContainer.translate(argument, instructions));
+			argumentsValues.add(expressionTranslatorContainer.translate(
+					argument, instructions));
 			argumentsType.add(argument.getType());
 		}
 
@@ -81,16 +84,21 @@ public class TermPrimaryExpressionTranslator extends AbstractExpressionTranslato
 
 		String computedMethodName;
 		
-		if (castableMethodSpecification == null) assert false;//return null;
+		if (castableMethodSpecification == null)
+			assert false;//return null;
 		
 		if (isBuiltInMethod(termPrimary))
 			computedMethodName = RILUtilities.computeMethodName(castableMethodSpecification);
 		else
 			computedMethodName = RILUtilities.computeMethodName(castableMethodSpecification.getRebecType(), castableMethodSpecification);
-
+		
+		Map<String, Object> passedParameters = new TreeMap<String, Object>();
+		List<String> argumentsNames = castableMethodSpecification.getArgumentsNames();
+		for(int cnt = 0; cnt < argumentsNames.size(); cnt++)
+			passedParameters.put(argumentsNames.get(cnt), argumentsValues.get(cnt));
+		
 		if (termPrimary.getType() == CoreRebecaTypeSystem.MSGSRV_TYPE) {
-			instructions.add(createMsgSrvCallInstructionBean(baseVariable, parameterTempObjects, computedMethodName,
-					termPrimary, instructions));
+			instructions.add(createMsgSrvCallInstructionBean(baseVariable, passedParameters, computedMethodName, termPrimary, instructions));
 			return null;
 		}
 
@@ -102,11 +110,10 @@ public class TermPrimaryExpressionTranslator extends AbstractExpressionTranslato
 
 		if (termPrimary.getLabel() == CoreRebecaLabelUtility.BUILT_IN_METHOD) {
 			instructions.add(new ExternalMethodCallInstructionBean(baseVariable, computedMethodName,
-					parameterTempObjects, tempVariable));
+					passedParameters, tempVariable));
 		} else {
 			MethodCallInstructionBean methodCallInstructionBean = new MethodCallInstructionBean(baseVariable,
 					computedMethodName);
-			methodCallInstructionBean.setParameters(parameterTempObjects);
 			methodCallInstructionBean.setFunctionCallResult(tempVariable);
 			instructions.add(methodCallInstructionBean);
 		}
@@ -116,9 +123,9 @@ public class TermPrimaryExpressionTranslator extends AbstractExpressionTranslato
 	}
 
 	protected CallMsgSrvInstructionBean createMsgSrvCallInstructionBean(Variable baseVariable,
-			ArrayList<Object> parameterTempObjects, String computedMethodName, TermPrimary termPrimary,
+			Map<String, Object> parameters, String computedMethodName, TermPrimary termPrimary,
 			ArrayList<InstructionBean> instructions) {
-		return new CallMsgSrvInstructionBean(baseVariable, computedMethodName, parameterTempObjects);
+		return new CallMsgSrvInstructionBean(baseVariable, computedMethodName, parameters);
 	}
 
 	private MethodInSymbolTableSpecifier getMethodFromSymbolTable(Type baseType, TermPrimary termPrimary,
