@@ -17,13 +17,16 @@ import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.FieldDeclara
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ForStatement;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.InstanceofExpression;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Literal;
+import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.MainRebecDefinition;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.MethodDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.MsgsrvDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.NonDetExpression;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.PlusSubExpression;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ReactiveClassDeclaration;
+import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.RebecInstantiationPrimary;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.RebecaModel;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ReturnStatement;
+import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Statement;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.SwitchStatement;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.TermPrimary;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.UnaryExpression;
@@ -36,7 +39,6 @@ import org.rebecalang.modeltransformer.ril.RILModel;
 import org.rebecalang.modeltransformer.ril.RILUtilities;
 import org.rebecalang.modeltransformer.ril.Rebeca2RILExpressionTranslatorContainer;
 import org.rebecalang.modeltransformer.ril.Rebeca2RILStatementTranslatorContainer;
-import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.EndMethodInstructionBean;
 import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.EndMsgSrvInstructionBean;
 import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.InstructionBean;
 import org.rebecalang.modeltransformer.ril.corerebeca.translator.BlockStatementTranslator;
@@ -55,6 +57,7 @@ import org.rebecalang.modeltransformer.ril.corerebeca.translator.expressiontrans
 import org.rebecalang.modeltransformer.ril.corerebeca.translator.expressiontranslator.LiteralStatementTranslator;
 import org.rebecalang.modeltransformer.ril.corerebeca.translator.expressiontranslator.NonDetExpressionTranslator;
 import org.rebecalang.modeltransformer.ril.corerebeca.translator.expressiontranslator.PlusSubExpressionTranslator;
+import org.rebecalang.modeltransformer.ril.corerebeca.translator.expressiontranslator.RebecInstantiationPrimaryExpressionTranslator;
 import org.rebecalang.modeltransformer.ril.corerebeca.translator.expressiontranslator.TermPrimaryExpressionTranslator;
 import org.rebecalang.modeltransformer.ril.corerebeca.translator.expressiontranslator.UnaryExpressionTranslator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -127,6 +130,8 @@ public class CoreRebecaModel2RILTransformer extends AbstractRILModelTransformer 
 				appContext.getBean(PlusSubExpressionTranslator.class, expressionTranslatorContainer));
 		expressionTranslatorContainer.registerTranslator(NonDetExpression.class,
 				appContext.getBean(NonDetExpressionTranslator.class, expressionTranslatorContainer));
+		expressionTranslatorContainer.registerTranslator(RebecInstantiationPrimary.class,
+				appContext.getBean(RebecInstantiationPrimaryExpressionTranslator.class, expressionTranslatorContainer));
 		expressionTranslatorContainer.registerTranslator(TermPrimary.class,
 				(TermPrimaryExpressionTranslator)appContext.getBean("CORE_REBECA_TERM_PRIMARY", 
 						expressionTranslatorContainer));
@@ -151,34 +156,45 @@ public class CoreRebecaModel2RILTransformer extends AbstractRILModelTransformer 
 			for(MsgsrvDeclaration msgsrv : rcd.getMsgsrvs()) {
 				if(msgsrv.isAbstract())
 					continue;
-				ArrayList<InstructionBean> instructions = new ArrayList<InstructionBean>();
 				String computedMethodName = RILUtilities.computeMethodName(rcd, msgsrv);
+				ArrayList<InstructionBean> instructions = generateMethodRIL(rcd, computedMethodName, msgsrv.getBlock());
 				transformedRILModel.addMethod(computedMethodName, instructions);
-				statementTranslatorContainer.prepare(rcd, computedMethodName);
-				statementTranslatorContainer.translate(msgsrv.getBlock(), instructions);
-				instructions.add(new EndMsgSrvInstructionBean());
 			}
 			for(ConstructorDeclaration constructorDeclaration : rcd.getConstructors()) {
-				ArrayList<InstructionBean> instructions = new ArrayList<InstructionBean>();
 				String computedMethodName = RILUtilities.computeMethodName(rcd, constructorDeclaration);
+				ArrayList<InstructionBean> instructions = generateMethodRIL(rcd, computedMethodName, constructorDeclaration.getBlock());
 				transformedRILModel.addMethod(computedMethodName, instructions);
-				statementTranslatorContainer.prepare(rcd, computedMethodName);
-				statementTranslatorContainer.translate(constructorDeclaration.getBlock(), instructions);
-				instructions.add(new EndMsgSrvInstructionBean());
 			}
 			for(MethodDeclaration methodDeclaration : rcd.getSynchMethods()) {
 				if(methodDeclaration.isAbstract())
 					continue;
-				ArrayList<InstructionBean> instructions = new ArrayList<InstructionBean>();
 				String computedMethodName = RILUtilities.computeMethodName(rcd, methodDeclaration);
+				ArrayList<InstructionBean> instructions = generateMethodRIL(rcd, computedMethodName, methodDeclaration.getBlock());
 				transformedRILModel.addMethod(computedMethodName, instructions);
-				statementTranslatorContainer.prepare(rcd, computedMethodName);
-				statementTranslatorContainer.translate(methodDeclaration.getBlock(), instructions);
-				instructions.add(new EndMethodInstructionBean());
 			}
-			
 		}
+		BlockStatement blockStatement = new BlockStatement();
+		for(MainRebecDefinition mrd : rebecaModel.getRebecaCode().getMainDeclaration().getMainRebecDefinition()) {
+			RebecInstantiationPrimary rip = new RebecInstantiationPrimary();
+			rip.setCharacter(mrd.getCharacter());
+			rip.setLineNumber(mrd.getLineNumber());
+			rip.setType(mrd.getType());
+			rip.getAnnotations().addAll(mrd.getAnnotations());
+			rip.getArguments().addAll(mrd.getArguments());
+			rip.getBindings().addAll(mrd.getBindings());
+			blockStatement.getStatements().add(rip);
+		}
+		ArrayList<InstructionBean> instructions = generateMethodRIL(null, "main", blockStatement);
+		transformedRILModel.addMethod("main", instructions);
+		
 		return transformedRILModel;
 	}
 
+	private ArrayList<InstructionBean> generateMethodRIL(ReactiveClassDeclaration rcd, String computedMethodName, Statement statement) {
+		ArrayList<InstructionBean> instructions = new ArrayList<InstructionBean>();
+		statementTranslatorContainer.prepare(rcd, computedMethodName);
+		statementTranslatorContainer.translate(statement, instructions);
+		instructions.add(new EndMsgSrvInstructionBean());
+		return instructions;
+	}
 }

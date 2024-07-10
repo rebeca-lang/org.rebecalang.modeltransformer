@@ -46,10 +46,12 @@ public class TermPrimaryExpressionTranslator extends AbstractExpressionTranslato
 	public Object translate(Expression expression, ArrayList<InstructionBean> instructions) {
 		ReactiveClassDeclaration reactiveClassDeclaration = expressionTranslatorContainer.getReactiveClassDeclaration();
 		Type baseType = null;
-		try {
-			baseType = coreRebecaTypeSystem.getType(reactiveClassDeclaration.getName());
-		} catch (CodeCompilationException e) {
-			e.printStackTrace();
+		if(reactiveClassDeclaration != null) {
+			try {
+				baseType = coreRebecaTypeSystem.getType(reactiveClassDeclaration.getName());
+			} catch (CodeCompilationException e) {
+				e.printStackTrace();
+			}
 		}
 		Variable base = null;
 		if (!isBuiltInMethod(expression))
