@@ -1,12 +1,9 @@
 package org.rebecalang.modeltransformer;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.Set;
 
-import org.antlr.v4.parse.ANTLRParser.exceptionGroup_return;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
@@ -19,14 +16,12 @@ import org.rebecalang.compiler.CompilerConfig;
 import org.rebecalang.compiler.modelcompiler.RebecaModelCompiler;
 import org.rebecalang.compiler.modelcompiler.SymbolTable;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.RebecaModel;
-import org.rebecalang.compiler.utils.CodeCompilationException;
 import org.rebecalang.compiler.utils.CompilerExtension;
 import org.rebecalang.compiler.utils.CoreVersion;
 import org.rebecalang.compiler.utils.ExceptionContainer;
 import org.rebecalang.compiler.utils.Pair;
 import org.rebecalang.modeltransformer.ril.RILModel;
 import org.rebecalang.modeltransformer.ril.Rebeca2RILModelTransformer;
-import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.InstructionBean;
 import org.rebecalang.modeltransformer.ros.Rebeca2ROSModelTransformer;
 import org.rebecalang.modeltransformer.ros.Rebeca2ROSProperties;
 import org.rebecalang.modeltransformer.solidity.Rebeca2SolidityModelTransformer;
@@ -34,7 +29,6 @@ import org.rebecalang.modeltransformer.solidity.Rebeca2SolidityProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 
 @Component

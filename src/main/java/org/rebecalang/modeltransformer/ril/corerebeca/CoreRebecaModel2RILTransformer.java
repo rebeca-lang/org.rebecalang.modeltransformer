@@ -39,6 +39,7 @@ import org.rebecalang.modeltransformer.ril.RILModel;
 import org.rebecalang.modeltransformer.ril.RILUtilities;
 import org.rebecalang.modeltransformer.ril.Rebeca2RILExpressionTranslatorContainer;
 import org.rebecalang.modeltransformer.ril.Rebeca2RILStatementTranslatorContainer;
+import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.EndMethodInstructionBean;
 import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.EndMsgSrvInstructionBean;
 import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.InstructionBean;
 import org.rebecalang.modeltransformer.ril.corerebeca.translator.BlockStatementTranslator;
@@ -158,11 +159,13 @@ public class CoreRebecaModel2RILTransformer extends AbstractRILModelTransformer 
 					continue;
 				String computedMethodName = RILUtilities.computeMethodName(rcd, msgsrv);
 				ArrayList<InstructionBean> instructions = generateMethodRIL(rcd, computedMethodName, msgsrv.getBlock());
+				instructions.add(new EndMsgSrvInstructionBean());
 				transformedRILModel.addMethod(computedMethodName, instructions);
 			}
 			for(ConstructorDeclaration constructorDeclaration : rcd.getConstructors()) {
 				String computedMethodName = RILUtilities.computeMethodName(rcd, constructorDeclaration);
 				ArrayList<InstructionBean> instructions = generateMethodRIL(rcd, computedMethodName, constructorDeclaration.getBlock());
+				instructions.add(new EndMethodInstructionBean());
 				transformedRILModel.addMethod(computedMethodName, instructions);
 			}
 			for(MethodDeclaration methodDeclaration : rcd.getSynchMethods()) {
@@ -170,6 +173,7 @@ public class CoreRebecaModel2RILTransformer extends AbstractRILModelTransformer 
 					continue;
 				String computedMethodName = RILUtilities.computeMethodName(rcd, methodDeclaration);
 				ArrayList<InstructionBean> instructions = generateMethodRIL(rcd, computedMethodName, methodDeclaration.getBlock());
+				instructions.add(new EndMethodInstructionBean());
 				transformedRILModel.addMethod(computedMethodName, instructions);
 			}
 		}
@@ -194,7 +198,6 @@ public class CoreRebecaModel2RILTransformer extends AbstractRILModelTransformer 
 		ArrayList<InstructionBean> instructions = new ArrayList<InstructionBean>();
 		statementTranslatorContainer.prepare(rcd, computedMethodName);
 		statementTranslatorContainer.translate(statement, instructions);
-		instructions.add(new EndMsgSrvInstructionBean());
 		return instructions;
 	}
 }

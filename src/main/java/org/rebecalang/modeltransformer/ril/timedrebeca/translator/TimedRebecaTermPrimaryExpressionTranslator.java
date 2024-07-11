@@ -15,7 +15,7 @@ import org.rebecalang.modeltransformer.ril.Rebeca2RILExpressionTranslatorContain
 import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.InstructionBean;
 import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.Variable;
 import org.rebecalang.modeltransformer.ril.corerebeca.translator.expressiontranslator.TermPrimaryExpressionTranslator;
-import org.rebecalang.modeltransformer.ril.timedrebeca.rilinstruction.CallTimedMsgSrvInstructionBean;
+import org.rebecalang.modeltransformer.ril.timedrebeca.rilinstruction.TimedMsgSrvCallInstructionBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -54,7 +54,7 @@ public class TimedRebecaTermPrimaryExpressionTranslator extends TermPrimaryExpre
 	}
 
 	@Override
-	protected CallTimedMsgSrvInstructionBean createMsgSrvCallInstructionBean(Variable baseVariable,
+	protected TimedMsgSrvCallInstructionBean createMsgSrvCallInstructionBean(Variable baseVariable,
 			Map<String, Object> parameterTempObjects, String computedMethodName, TermPrimary termPrimary,
 			ArrayList<InstructionBean> instructions) {
 		TimedRebecaParentSuffixPrimary parentSuffixPrimary = (TimedRebecaParentSuffixPrimary) termPrimary
@@ -67,7 +67,7 @@ public class TimedRebecaTermPrimaryExpressionTranslator extends TermPrimaryExpre
 		Expression deadlineExpression = parentSuffixPrimary.getDeadlineExpression();
 		if (deadlineExpression != null)
 			deadlineResult = expressionTranslatorContainer.translate(deadlineExpression, instructions);
-		return new CallTimedMsgSrvInstructionBean(baseVariable, computedMethodName, parameterTempObjects, afterResult,
+		return new TimedMsgSrvCallInstructionBean(baseVariable, computedMethodName, parameterTempObjects, afterResult,
 				deadlineResult);
 	}
 
