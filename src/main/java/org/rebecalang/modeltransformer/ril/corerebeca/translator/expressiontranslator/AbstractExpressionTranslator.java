@@ -35,7 +35,5 @@ public abstract class AbstractExpressionTranslator {
 		this.expressionTranslatorContainer = expressionTranslatorContainer;
 	}
 
-
-
 	public abstract Object translate(Expression expression, ArrayList<InstructionBean> instructions);
 }

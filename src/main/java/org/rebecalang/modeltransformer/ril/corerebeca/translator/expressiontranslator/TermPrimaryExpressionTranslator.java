@@ -7,6 +7,7 @@ import java.util.TreeMap;
 
 import org.rebecalang.compiler.modelcompiler.SymbolTable;
 import org.rebecalang.compiler.modelcompiler.SymbolTable.MethodInSymbolTableSpecifier;
+import org.rebecalang.compiler.modelcompiler.abstractrebeca.AbstractTypeSystem;
 import org.rebecalang.compiler.modelcompiler.SymbolTableException;
 import org.rebecalang.compiler.modelcompiler.corerebeca.CoreRebecaLabelUtility;
 import org.rebecalang.compiler.modelcompiler.corerebeca.CoreRebecaTypeSystem;
@@ -24,9 +25,9 @@ import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.Instruction
 import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.MethodCallInstructionBean;
 import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.Variable;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
+import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.stereotype.Component;
 
 @Component("CORE_REBECA_TERM_PRIMARY")
@@ -39,8 +40,7 @@ public class TermPrimaryExpressionTranslator extends AbstractExpressionTranslato
 	}
 
 	@Autowired
-	@Qualifier("CORE_REBECA")
-	CoreRebecaTypeSystem coreRebecaTypeSystem;
+	protected GenericApplicationContext appContext;
 
 	@Override
 	public Object translate(Expression expression, ArrayList<InstructionBean> instructions) {
@@ -48,7 +48,8 @@ public class TermPrimaryExpressionTranslator extends AbstractExpressionTranslato
 		Type baseType = null;
 		if(reactiveClassDeclaration != null) {
 			try {
-				baseType = coreRebecaTypeSystem.getType(reactiveClassDeclaration.getName());
+				AbstractTypeSystem typeSystem = (AbstractTypeSystem) appContext.getBean("typeSystem");
+				baseType = typeSystem.getType(reactiveClassDeclaration.getName());
 			} catch (CodeCompilationException e) {
 				e.printStackTrace();
 			}

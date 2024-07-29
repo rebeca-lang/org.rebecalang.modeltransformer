@@ -8,7 +8,7 @@ import java.util.TreeMap;
 import org.rebecalang.compiler.modelcompiler.SymbolTable;
 import org.rebecalang.compiler.modelcompiler.SymbolTable.MethodInSymbolTableSpecifier;
 import org.rebecalang.compiler.modelcompiler.SymbolTableException;
-import org.rebecalang.compiler.modelcompiler.corerebeca.CoreRebecaTypeSystem;
+import org.rebecalang.compiler.modelcompiler.abstractrebeca.AbstractTypeSystem;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Expression;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.FieldDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ReactiveClassDeclaration;
@@ -20,9 +20,9 @@ import org.rebecalang.modeltransformer.ril.Rebeca2RILExpressionTranslatorContain
 import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.InstructionBean;
 import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.RebecInstantiationInstructionBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
+import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -34,9 +34,7 @@ public class RebecInstantiationPrimaryExpressionTranslator extends AbstractExpre
 	}
 
 	@Autowired
-	@Qualifier("CORE_REBECA")
-	CoreRebecaTypeSystem coreRebecaTypeSystem;
-
+	protected GenericApplicationContext appContext;
 
 	@Override
 	public Object translate(Expression expression, ArrayList<InstructionBean> instructions) {
@@ -50,8 +48,9 @@ public class RebecInstantiationPrimaryExpressionTranslator extends AbstractExpre
 					argument, instructions));
 		}
 		try {
+			AbstractTypeSystem typeSystem = (AbstractTypeSystem) appContext.getBean("typeSystem");
 			ReactiveClassDeclaration metaData = 
-					(ReactiveClassDeclaration) coreRebecaTypeSystem.getMetaData(rip.getType());
+					(ReactiveClassDeclaration) typeSystem.getMetaData(rip.getType());
 			int cnt = 0;
 			for(FieldDeclaration knownrebecsFD : metaData.getKnownRebecs()) {
 				for(VariableDeclarator knownrebecDeclaration : knownrebecsFD.getVariableDeclarators()) {

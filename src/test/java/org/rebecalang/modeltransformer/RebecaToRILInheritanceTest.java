@@ -1,7 +1,6 @@
 package org.rebecalang.modeltransformer;
 
 import java.io.File;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -50,11 +49,11 @@ public class RebecaToRILInheritanceTest {
         Pair<RebecaModel, SymbolTable> compilationResult =
                 compileModel(model, extension, CoreVersion.CORE_2_3);
 
-//        RILModel transformModel =
-//                rebeca2RIL.transformModel(compilationResult, extension, CoreVersion.CORE_2_3);
+        RILModel transformModel =
+                rebeca2RIL.transformModel(compilationResult, extension, CoreVersion.CORE_2_3);
 
         printExceptions();
-//        printAllMethods(transformModel);
+        printAllMethods(transformModel);
     }
 
     @Test
@@ -66,11 +65,11 @@ public class RebecaToRILInheritanceTest {
         Pair<RebecaModel, SymbolTable> compilationResult =
                 compileModel(model, extension, CoreVersion.CORE_2_3);
 
-//        RILModel transformModel =
-//                rebeca2RIL.transformModel(compilationResult, extension, CoreVersion.CORE_2_3);
+        RILModel transformModel =
+                rebeca2RIL.transformModel(compilationResult, extension, CoreVersion.CORE_2_3);
 
         printExceptions();
-//        printAllMethods(transformModel);
+        printAllMethods(transformModel);
     }
 
     @Test
@@ -82,11 +81,11 @@ public class RebecaToRILInheritanceTest {
         Pair<RebecaModel, SymbolTable> compilationResult =
                 compileModel(model, extension, CoreVersion.CORE_2_3);
 
-//        RILModel transformModel =
-//                rebeca2RIL.transformModel(compilationResult, extension, CoreVersion.CORE_2_3);
+        RILModel transformModel =
+                rebeca2RIL.transformModel(compilationResult, extension, CoreVersion.CORE_2_3);
 
         printExceptions();
-//        printAllMethods(transformModel);
+        printAllMethods(transformModel);
     }
 
     @Test
@@ -98,10 +97,10 @@ public class RebecaToRILInheritanceTest {
         Pair<RebecaModel, SymbolTable> compilationResult =
                 compileModel(model, extension, CoreVersion.CORE_2_3);
 
-//        RILModel transformModel =
-//                rebeca2RIL.transformModel(compilationResult, extension, CoreVersion.CORE_2_3);
-//
-//        printAllMethods(transformModel);
+        RILModel transformModel =
+                rebeca2RIL.transformModel(compilationResult, extension, CoreVersion.CORE_2_3);
+
+        printAllMethods(transformModel);
 
         printExceptions();
         Assertions.assertTrue(exceptionContainer.exceptionsIsEmpty());
@@ -116,10 +115,10 @@ public class RebecaToRILInheritanceTest {
         Pair<RebecaModel, SymbolTable> compilationResult =
                 compileModel(model, extension, CoreVersion.CORE_2_3);
 
-//        RILModel transformModel =
-//                rebeca2RIL.transformModel(compilationResult, extension, CoreVersion.CORE_2_3);
-//
-//        printAllMethods(transformModel);
+        RILModel transformModel =
+                rebeca2RIL.transformModel(compilationResult, extension, CoreVersion.CORE_2_3);
+
+        printAllMethods(transformModel);
 
         printExceptions();
         Assertions.assertTrue(exceptionContainer.exceptionsIsEmpty());
@@ -134,10 +133,10 @@ public class RebecaToRILInheritanceTest {
         Pair<RebecaModel, SymbolTable> compilationResult =
                 compileModel(model, extension, CoreVersion.CORE_2_3);
 
-//        RILModel transformModel =
-//                rebeca2RIL.transformModel(compilationResult, extension, CoreVersion.CORE_2_3);
+        RILModel transformModel =
+                rebeca2RIL.transformModel(compilationResult, extension, CoreVersion.CORE_2_3);
 
-//        printAllMethods(transformModel);
+        printAllMethods(transformModel);
 
         printExceptions();
         Assertions.assertTrue(exceptionContainer.exceptionsIsEmpty());
@@ -152,10 +151,10 @@ public class RebecaToRILInheritanceTest {
         Pair<RebecaModel, SymbolTable> compilationResult =
                 compileModel(model, extension, CoreVersion.CORE_2_3);
 
-//        RILModel transformModel =
-//                rebeca2RIL.transformModel(compilationResult, extension, CoreVersion.CORE_2_3);
-//
-//        printAllMethods(transformModel);
+        RILModel transformModel =
+                rebeca2RIL.transformModel(compilationResult, extension, CoreVersion.CORE_2_3);
+
+        printAllMethods(transformModel);
 
         printExceptions();
         Assertions.assertTrue(exceptionContainer.exceptionsIsEmpty());
@@ -170,10 +169,10 @@ public class RebecaToRILInheritanceTest {
         Pair<RebecaModel, SymbolTable> compilationResult =
                 compileModel(model, extension, CoreVersion.CORE_2_3);
 
-//        RILModel transformModel =
-//                rebeca2RIL.transformModel(compilationResult, extension, CoreVersion.CORE_2_3);
-//
-//        printAllMethods(transformModel);
+        RILModel transformModel =
+                rebeca2RIL.transformModel(compilationResult, extension, CoreVersion.CORE_2_3);
+
+        printAllMethods(transformModel);
 
         printExceptions();
         Assertions.assertTrue(exceptionContainer.exceptionsIsEmpty());
@@ -188,10 +187,10 @@ public class RebecaToRILInheritanceTest {
         Pair<RebecaModel, SymbolTable> compilationResult =
                 compileModel(model, extension, CoreVersion.CORE_2_3);
 
-//        RILModel transformModel =
-//                rebeca2RIL.transformModel(compilationResult, extension, CoreVersion.CORE_2_3);
-//
-//        printAllMethods(transformModel);
+        RILModel transformModel =
+                rebeca2RIL.transformModel(compilationResult, extension, CoreVersion.CORE_2_3);
+
+        printAllMethods(transformModel);
 
         printExceptions();
         Assertions.assertTrue(exceptionContainer.exceptionsIsEmpty());
@@ -206,10 +205,10 @@ public class RebecaToRILInheritanceTest {
         Pair<RebecaModel, SymbolTable> compilationResult =
                 compileModel(model, extension, CoreVersion.CORE_2_3);
 
-//        RILModel transformModel =
-//                rebeca2RIL.transformModel(compilationResult, extension, CoreVersion.CORE_2_3);
-//
-//        printAllMethods(transformModel);
+        RILModel transformModel =
+                rebeca2RIL.transformModel(compilationResult, extension, CoreVersion.CORE_2_3);
+
+        printAllMethods(transformModel);
 
         printExceptions();
         Assertions.assertTrue(exceptionContainer.exceptionsIsEmpty());

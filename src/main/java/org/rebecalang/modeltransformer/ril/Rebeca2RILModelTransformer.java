@@ -14,6 +14,7 @@ import org.rebecalang.modeltransformer.ril.corerebeca.CoreRebecaModel2RILTransfo
 import org.rebecalang.modeltransformer.ril.timedrebeca.TimedRebecaModel2RILTransformer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -34,6 +35,10 @@ public class Rebeca2RILModelTransformer {
 	@Qualifier("CORE_REBECA")
 	CoreRebecaModel2RILTransformer coreRebecaModelTransformer;
 	
+	@Autowired
+	protected GenericApplicationContext appContext;
+
+	
 	public RILModel transformModel(Pair<RebecaModel, SymbolTable> model, 
 			Set<CompilerExtension> extension, 
 			CoreVersion coreVersion) {
@@ -49,12 +54,14 @@ public class Rebeca2RILModelTransformer {
 			return null;
 
 		} else if (extension.contains(CompilerExtension.TIMED_REBECA)) {
+			appContext.registerAlias("timedRebecaTypeSystem", "typeSystem");
 			modelTransformer = timedRebecaModelTransformer;
 		} else {
+			appContext.registerAlias("coreRebecaTypeSystem", "typeSystem");
+			appContext.registerAlias("coreRebecaTypeSystem", "typeSystem");
 			modelTransformer = coreRebecaModelTransformer;
 		}
 		
 		return modelTransformer.transformModel(model, extension, coreVersion);
-		
 	}
 }

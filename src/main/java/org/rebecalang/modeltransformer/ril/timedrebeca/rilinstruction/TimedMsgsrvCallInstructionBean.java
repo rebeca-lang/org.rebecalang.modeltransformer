@@ -5,12 +5,12 @@ import java.util.Map;
 import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.MsgsrvCallInstructionBean;
 import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.Variable;
 
-public class TimedMsgSrvCallInstructionBean extends MsgsrvCallInstructionBean {
+public class TimedMsgsrvCallInstructionBean extends MsgsrvCallInstructionBean {
 
 	private Object after;
 	private Object deadline;
 
-	public TimedMsgSrvCallInstructionBean(Variable receiver, String msgsrvName, Map<String, Object> parameters,
+	public TimedMsgsrvCallInstructionBean(Variable receiver, String msgsrvName, Map<String, Object> parameters,
 			Object after, Object deadline) {
 		super(receiver, msgsrvName, parameters);
 		this.after = after;
