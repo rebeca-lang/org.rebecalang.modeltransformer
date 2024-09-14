@@ -1,6 +1,8 @@
 package org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction;
 
-public class Variable {
+import java.io.Serializable;
+
+public class Variable implements Serializable {
 	
 	String varName;
 
