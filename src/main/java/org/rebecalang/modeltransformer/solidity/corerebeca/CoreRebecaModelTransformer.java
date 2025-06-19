@@ -35,7 +35,9 @@ public class CoreRebecaModelTransformer {
 
 	private StringBuilder contract;
 	
+	@SuppressWarnings("unused")
 	private Rebeca2SolidityExpressionTranslatorContainer expressionTranslatorContainer;
+	@SuppressWarnings("unused")
 	private Rebeca2SolidityStatementTranslatorContainer statementTranslatorContainer;
 	
 	@Autowired

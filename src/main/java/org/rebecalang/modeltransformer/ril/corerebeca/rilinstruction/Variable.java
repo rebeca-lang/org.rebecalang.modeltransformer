@@ -2,6 +2,7 @@ package org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction;
 
 import java.io.Serializable;
 
+@SuppressWarnings("serial")
 public class Variable implements Serializable {
 	
 	String varName;

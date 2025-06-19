@@ -1,7 +1,5 @@
 package org.rebecalang.modeltransformer;
 
-import org.rebecalang.modeltransformer.Transform;
-
 
 public class TimedRebecaToRealTimeMaude {
 	String base = "src/test/resources/org/rebecalang/modeltransformer/testcase";

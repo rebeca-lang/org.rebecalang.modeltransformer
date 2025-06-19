@@ -28,7 +28,9 @@ public class DotPrimaryExpressionTranslator extends AbstractExpressionTranslator
 		DotPrimary dotPrimary = (DotPrimary) expression;
 		Variable leftSide = (Variable) expressionTranslatorContainer.translate(dotPrimary.getLeft(),
 				instructions);
-		TermPrimary rightSide = (TermPrimary) dotPrimary.getRight();
+		TermPrimary rightSide = null;
+		rightSide = (TermPrimary) dotPrimary.getRight();
+
 		TermPrimaryExpressionTranslator translator = 
 				(TermPrimaryExpressionTranslator) expressionTranslatorContainer.getTranslator(TermPrimary.class);
 		return translator.translate(dotPrimary.getLeft().getType(), leftSide, rightSide, instructions);

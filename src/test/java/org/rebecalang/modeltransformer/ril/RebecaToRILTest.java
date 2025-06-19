@@ -1,4 +1,4 @@
-package org.rebecalang.modeltransformer;
+package org.rebecalang.modeltransformer.ril;
 
 import java.io.File;
 import java.util.HashSet;
@@ -13,6 +13,7 @@ import org.rebecalang.compiler.utils.CompilerExtension;
 import org.rebecalang.compiler.utils.CoreVersion;
 import org.rebecalang.compiler.utils.ExceptionContainer;
 import org.rebecalang.compiler.utils.Pair;
+import org.rebecalang.modeltransformer.ModelTransformerConfig;
 import org.rebecalang.modeltransformer.ril.RILModel;
 import org.rebecalang.modeltransformer.ril.Rebeca2RILModelTransformer;
 import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.InstructionBean;
@@ -59,5 +60,6 @@ public class RebecaToRILTest {
 			}
 			System.out.println("...............................................");
 		}
+		
 	}
 }
