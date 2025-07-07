@@ -54,11 +54,11 @@ public class TermPrimaryExpressionTranslator extends AbstractExpressionTranslato
 				e.printStackTrace();
 			}
 		}
-		Variable base = null;
-		if (!isBuiltInMethod(expression))
-			base = new Variable("self");
+//		Variable base = null;
+//		if (!isBuiltInMethod(expression))
+//			base = new Variable("self");
 
-		return translate(baseType, base, (TermPrimary) expression, instructions);
+		return translate(baseType, null, (TermPrimary) expression, instructions);
 	}
 
 	protected boolean isBuiltInMethod(Expression expression) {
@@ -69,7 +69,7 @@ public class TermPrimaryExpressionTranslator extends AbstractExpressionTranslato
 	public Object translate(Type baseType, Variable baseVariable, TermPrimary termPrimary,
 			ArrayList<InstructionBean> instructions) {
 		if (termPrimary.getParentSuffixPrimary() == null)
-			return (new Variable(termPrimary.getName()));
+			return (new Variable(baseVariable, termPrimary.getName()));
 
 		List<Expression> arguments = termPrimary.getParentSuffixPrimary().getArguments();
 		ArrayList<Object> argumentsValues = new ArrayList<Object>();

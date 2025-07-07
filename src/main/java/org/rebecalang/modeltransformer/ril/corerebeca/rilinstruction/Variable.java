@@ -6,13 +6,17 @@ import java.io.Serializable;
 public class Variable implements Serializable {
 	
 	String varName;
+	Variable base;
 
 	
 	public Variable(String varName) {
-		super();
 		this.varName = varName;
 	}
 
+	public Variable(Variable base, String varName) {
+		this.varName = varName;
+		this.base = base;
+	}
 	
 	public String getVarName() {
 		return varName;
@@ -22,9 +26,17 @@ public class Variable implements Serializable {
 		this.varName = varName;
 	}
 
+	public Variable getBase() {
+		return base;
+	}
+	
+	public void setBase(Variable base) {
+		this.base = base;
+	}
+	
 	@Override
 	public String toString() {
-		return varName;
+		return ((base == null) ? "" : (base.getVarName() + ".")) + varName;
 	}
 
 

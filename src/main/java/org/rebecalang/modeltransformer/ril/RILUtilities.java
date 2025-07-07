@@ -11,7 +11,7 @@ import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Type;
 
 public class RILUtilities {
 
-	private static String computeMethodName(String className, String methodName, List<Type> parametersTypes) {
+	public static String computeMethodName(String className, String methodName, List<Type> parametersTypes) {
 
 		String canonicalMethodName = className + "." + methodName;
 		canonicalMethodName += createListOfParameterTypes(parametersTypes);

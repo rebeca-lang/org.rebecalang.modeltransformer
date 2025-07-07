@@ -42,24 +42,26 @@ public class RebecInstantiationPrimaryExpressionTranslator extends AbstractExpre
 		SymbolTable symbolTable = expressionTranslatorContainer.getSymbolTable();
 
 		Map<String, Object> bindings = new TreeMap<String, Object>();
-		List<Object> bindingValues = new ArrayList<Object>();
-		for (Expression argument : rip.getBindings()) {
-			bindingValues.add(expressionTranslatorContainer.translate(
-					argument, instructions));
-		}
-		try {
-			AbstractTypeSystem typeSystem = (AbstractTypeSystem) appContext.getBean("typeSystem");
-			ReactiveClassDeclaration metaData = 
-					(ReactiveClassDeclaration) typeSystem.getMetaData(rip.getType());
-			int cnt = 0;
-			for(FieldDeclaration knownrebecsFD : metaData.getKnownRebecs()) {
-				for(VariableDeclarator knownrebecDeclaration : knownrebecsFD.getVariableDeclarators()) {
-					bindings.put(knownrebecDeclaration.getVariableName(), bindingValues.get(cnt++));
-				}
+		if(!rip.getBindings().isEmpty()) {
+			List<Object> bindingValues = new ArrayList<Object>();
+			for (Expression argument : rip.getBindings()) {
+				bindingValues.add(expressionTranslatorContainer.translate(
+						argument, instructions));
 			}
-		} catch (CodeCompilationException e) {
-			e.printStackTrace();
-			assert false;
+			try {
+				AbstractTypeSystem typeSystem = (AbstractTypeSystem) appContext.getBean("typeSystem");
+				ReactiveClassDeclaration metaData = 
+						(ReactiveClassDeclaration) typeSystem.getMetaData(rip.getType());
+				int cnt = 0;
+				for(FieldDeclaration knownrebecsFD : metaData.getKnownRebecs()) {
+					for(VariableDeclarator knownrebecDeclaration : knownrebecsFD.getVariableDeclarators()) {
+						bindings.put(knownrebecDeclaration.getVariableName(), bindingValues.get(cnt++));
+					}
+				}
+			} catch (CodeCompilationException e) {
+				e.printStackTrace();
+				assert false;
+			}	
 		}
 		
 		

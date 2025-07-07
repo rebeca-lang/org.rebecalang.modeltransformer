@@ -1,6 +1,8 @@
 package org.rebecalang.modeltransformer.ril.corerebeca;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -13,6 +15,7 @@ import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ConditionalS
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ConstructorDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ContinueStatement;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.DotPrimary;
+import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Expression;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.FieldDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ForStatement;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.InstanceofExpression;
@@ -29,6 +32,7 @@ import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ReturnStatem
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Statement;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.SwitchStatement;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.TermPrimary;
+import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Type;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.UnaryExpression;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.WhileStatement;
 import org.rebecalang.compiler.utils.CompilerExtension;
@@ -177,7 +181,26 @@ public class CoreRebecaModel2RILTransformer extends AbstractRILModelTransformer 
 				transformedRILModel.addMethod(computedMethodName, instructions);
 			}
 		}
+		
+		transformedRILModel.addMethod("main", transformMainBlock(rebecaModel));
+		
+		return transformedRILModel;
+	}
+
+	private ArrayList<InstructionBean> transformMainBlock(RebecaModel rebecaModel) {
+		HashMap<String, ArrayList<String>> knownrebecsNames = 
+				new HashMap<String, ArrayList<String>>();
+		for(ReactiveClassDeclaration rcd : rebecaModel.getRebecaCode().getReactiveClassDeclaration()) {
+			ArrayList<String> bindingNames = new ArrayList<String>();
+			knownrebecsNames.put(rcd.getName(), bindingNames);
+			for(FieldDeclaration fd : rcd.getKnownRebecs()) {
+				bindingNames.add(fd.getVariableDeclarators().get(0).getVariableName());
+			}
+		}
+		
 		BlockStatement blockStatement = new BlockStatement();
+		LinkedList<BinaryExpression> setBindingsInstructions = 
+				new LinkedList<BinaryExpression>();
 		for(MainRebecDefinition mrd : rebecaModel.getRebecaCode().getMainDeclaration().getMainRebecDefinition()) {
 			RebecInstantiationPrimary rip = new RebecInstantiationPrimary();
 			rip.setCharacter(mrd.getCharacter());
@@ -185,13 +208,40 @@ public class CoreRebecaModel2RILTransformer extends AbstractRILModelTransformer 
 			rip.setType(mrd.getType());
 			rip.getAnnotations().addAll(mrd.getAnnotations());
 			rip.getArguments().addAll(mrd.getArguments());
-			rip.getBindings().addAll(mrd.getBindings());
+			for(int cnt = 0; cnt < mrd.getBindings().size(); cnt++) {
+				Expression binding = mrd.getBindings().get(cnt);
+				Type bindingType = binding.getType();
+//				rip.getBindings().add(null);
+				
+				BinaryExpression be = new BinaryExpression();
+				setBindingsInstructions.add(be);
+				be.setOperator("=");
+//				be.setCharacter(mrd.getCharacter());
+//				be.setLineNumber(mrd.getLineNumber());
+				be.setType(bindingType);
+				be.setRight(binding);
+
+				DotPrimary left = new DotPrimary();
+				be.setLeft(left);
+//				left.setCharacter(mrd.getCharacter());
+//				left.setLineNumber(mrd.getLineNumber());
+				left.setType(bindingType);
+				TermPrimary base = new TermPrimary();
+				base.setType(bindingType);
+				base.setName(mrd.getName());
+				left.setLeft(base);
+				TermPrimary variable = new TermPrimary();
+				variable.setType(bindingType);
+				variable.setName(knownrebecsNames.get(mrd.getType().getTypeName()).get(cnt));
+				left.setRight(variable);
+
+			}
+//			rip.getBindings().addAll(mrd.getBindings());
 			blockStatement.getStatements().add(rip);
 		}
+		blockStatement.getStatements().addAll(setBindingsInstructions);
 		ArrayList<InstructionBean> instructions = generateMethodRIL(null, "main", blockStatement);
-		transformedRILModel.addMethod("main", instructions);
-		
-		return transformedRILModel;
+		return instructions;
 	}
 
 	private ArrayList<InstructionBean> generateMethodRIL(ReactiveClassDeclaration rcd, String computedMethodName, Statement statement) {
@@ -200,4 +250,5 @@ public class CoreRebecaModel2RILTransformer extends AbstractRILModelTransformer 
 		statementTranslatorContainer.translate(statement, instructions);
 		return instructions;
 	}
+	
 }
