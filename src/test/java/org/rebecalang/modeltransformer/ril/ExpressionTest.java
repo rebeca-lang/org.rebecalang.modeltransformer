@@ -23,6 +23,7 @@ import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.Declaration
 import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.InstructionBean;
 import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.MethodCallInstructionBean;
 import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.MsgsrvCallInstructionBean;
+import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.RebecInstantiationInstructionBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
@@ -116,5 +117,42 @@ public class ExpressionTest {
 		Assertions.assertEquals(AssignmentInstructionBean.class, 
 				instructionList.get(8).getClass());
 		
+	}
+	
+	@Test
+	public void mainBlock() throws IOException {
+		
+		String rebecaModel = 
+				"""
+				reactiveclass Test1 (2) {
+					knownrebecs{Test1 t;}
+				}
+				main{
+					Test1 t1(t2):();
+					Test1 t2(t1):();
+				}
+				""";
+		File model = FileUtils.createTempFile(rebecaModel);
+		
+		Set<CompilerExtension> extension = new HashSet<CompilerExtension>();
+		Pair<RebecaModel, SymbolTable> compilationResult = 
+				compileModel(model, extension, CoreVersion.CORE_2_3);
+		
+		RILModel transformModel = 
+				rebeca2RIL.transformModel(compilationResult, extension, CoreVersion.CORE_2_3);
+		
+		ArrayList<InstructionBean> instructionList = transformModel.getInstructionList("main");
+		
+		InstructionBean firstInstance = instructionList.get(2);
+		Assertions.assertEquals(AssignmentInstructionBean.class, 
+				firstInstance.getClass());
+		Assertions.assertEquals(RebecInstantiationInstructionBean.class,
+				((AssignmentInstructionBean)firstInstance).getFirstOperand().getClass());
+		
+		InstructionBean secondInstance = instructionList.get(2);
+		Assertions.assertEquals(AssignmentInstructionBean.class, 
+				secondInstance.getClass());
+		Assertions.assertEquals(RebecInstantiationInstructionBean.class,
+				((AssignmentInstructionBean)secondInstance).getFirstOperand().getClass());
 	}
 }

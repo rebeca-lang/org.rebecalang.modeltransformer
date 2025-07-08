@@ -7,6 +7,9 @@ import java.util.List;
 import java.util.Set;
 
 import org.rebecalang.compiler.modelcompiler.SymbolTable;
+import org.rebecalang.compiler.modelcompiler.abstractrebeca.AbstractTypeSystem;
+import org.rebecalang.compiler.modelcompiler.corerebeca.CoreRebecaTypeSystem;
+import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.BaseClassDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.BinaryExpression;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.BlockStatement;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.BreakStatement;
@@ -24,6 +27,7 @@ import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.MainRebecDef
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.MethodDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.MsgsrvDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.NonDetExpression;
+import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.OrdinaryVariableInitializer;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.PlusSubExpression;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ReactiveClassDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.RebecInstantiationPrimary;
@@ -34,10 +38,13 @@ import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.SwitchStatem
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.TermPrimary;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Type;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.UnaryExpression;
+import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.VariableDeclarator;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.WhileStatement;
+import org.rebecalang.compiler.utils.CodeCompilationException;
 import org.rebecalang.compiler.utils.CompilerExtension;
 import org.rebecalang.compiler.utils.CoreVersion;
 import org.rebecalang.compiler.utils.Pair;
+import org.rebecalang.compiler.utils.TypesUtilities;
 import org.rebecalang.modeltransformer.ril.AbstractRILModelTransformer;
 import org.rebecalang.modeltransformer.ril.RILModel;
 import org.rebecalang.modeltransformer.ril.RILUtilities;
@@ -187,22 +194,41 @@ public class CoreRebecaModel2RILTransformer extends AbstractRILModelTransformer 
 		return transformedRILModel;
 	}
 
+	private ArrayList<String> extractKnownrebecsNames(ReactiveClassDeclaration rcd) {
+		ArrayList<String> retValue = new ArrayList<String>();
+		Type extendsType = rcd.getExtends();
+		if(extendsType != null) {
+			AbstractTypeSystem typeSystem = extendsType.getTypeSystem();
+			try {
+				ReactiveClassDeclaration metaData = 
+						(ReactiveClassDeclaration) typeSystem.getMetaData(extendsType);
+				retValue.addAll(extractKnownrebecsNames(metaData));
+			} catch (CodeCompilationException e) {
+				e.printStackTrace();
+			}
+		}
+		for(FieldDeclaration fd : rcd.getKnownRebecs()) {
+			retValue.add(fd.getVariableDeclarators().get(0).getVariableName());
+		}
+		return retValue;
+	}
+	
 	private ArrayList<InstructionBean> transformMainBlock(RebecaModel rebecaModel) {
 		HashMap<String, ArrayList<String>> knownrebecsNames = 
 				new HashMap<String, ArrayList<String>>();
 		for(ReactiveClassDeclaration rcd : rebecaModel.getRebecaCode().getReactiveClassDeclaration()) {
-			ArrayList<String> bindingNames = new ArrayList<String>();
-			knownrebecsNames.put(rcd.getName(), bindingNames);
-			for(FieldDeclaration fd : rcd.getKnownRebecs()) {
-				bindingNames.add(fd.getVariableDeclarators().get(0).getVariableName());
-			}
+			knownrebecsNames.put(rcd.getName(), extractKnownrebecsNames(rcd));
 		}
 		
 		BlockStatement blockStatement = new BlockStatement();
 		LinkedList<BinaryExpression> setBindingsInstructions = 
 				new LinkedList<BinaryExpression>();
 		for(MainRebecDefinition mrd : rebecaModel.getRebecaCode().getMainDeclaration().getMainRebecDefinition()) {
-			RebecInstantiationPrimary rip = new RebecInstantiationPrimary();
+			FieldDeclaration fd = createFieldDeclaration(mrd);
+			blockStatement.getStatements().add(fd);
+
+			RebecInstantiationPrimary rip = getRebecInstantiationPrimary(fd);
+
 			rip.setCharacter(mrd.getCharacter());
 			rip.setLineNumber(mrd.getLineNumber());
 			rip.setType(mrd.getType());
@@ -237,11 +263,29 @@ public class CoreRebecaModel2RILTransformer extends AbstractRILModelTransformer 
 
 			}
 //			rip.getBindings().addAll(mrd.getBindings());
-			blockStatement.getStatements().add(rip);
 		}
 		blockStatement.getStatements().addAll(setBindingsInstructions);
 		ArrayList<InstructionBean> instructions = generateMethodRIL(null, "main", blockStatement);
 		return instructions;
+	}
+
+	private RebecInstantiationPrimary getRebecInstantiationPrimary(FieldDeclaration fd) {
+		return (RebecInstantiationPrimary) 
+				((OrdinaryVariableInitializer)fd.getVariableDeclarators().get(0).getVariableInitializer()).getValue();
+	}
+
+	private FieldDeclaration createFieldDeclaration(MainRebecDefinition mrd) {
+		FieldDeclaration fd = new FieldDeclaration();
+		fd.setType(mrd.getType());
+		VariableDeclarator vd = new VariableDeclarator();
+		fd.getVariableDeclarators().add(vd);
+		vd.setVariableName(mrd.getName());
+		OrdinaryVariableInitializer ovi = new OrdinaryVariableInitializer();
+		ovi.setType(mrd.getType());
+		vd.setVariableInitializer(ovi);
+		RebecInstantiationPrimary rip = new RebecInstantiationPrimary();
+		ovi.setValue(rip);
+		return fd;
 	}
 
 	private ArrayList<InstructionBean> generateMethodRIL(ReactiveClassDeclaration rcd, String computedMethodName, Statement statement) {

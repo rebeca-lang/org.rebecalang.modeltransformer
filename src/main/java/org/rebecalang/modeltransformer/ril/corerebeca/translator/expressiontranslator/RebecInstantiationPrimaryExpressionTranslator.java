@@ -93,7 +93,6 @@ public class RebecInstantiationPrimaryExpressionTranslator extends AbstractExpre
 		aiib.setConstructorParameters(arguments);
 		aiib.setBindings(bindings);
 		aiib.setType(rip.getType());
-		instructions.add(aiib);
 		return aiib;
 	}
 	
