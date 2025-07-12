@@ -43,7 +43,6 @@ public class FieldDeclarationTranslator extends AbstractStatementTranslator {
 				Object initializationResult = expressionTranslatorContainer.translate(variableInitializer.getValue(), instructions);
 				instructions.add(new AssignmentInstructionBean(new Variable(vd.getVariableName()), initializationResult, null, null));
 			}
-
 		}
 	}
 }

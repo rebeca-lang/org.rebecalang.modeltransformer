@@ -20,7 +20,6 @@ import org.rebecalang.compiler.utils.CompilerExtension;
 import org.rebecalang.compiler.utils.CoreVersion;
 import org.rebecalang.compiler.utils.ExceptionContainer;
 import org.rebecalang.compiler.utils.Pair;
-import org.rebecalang.modeltransformer.ril.RILModel;
 import org.rebecalang.modeltransformer.ril.Rebeca2RILModelTransformer;
 import org.rebecalang.modeltransformer.ros.Rebeca2ROSModelTransformer;
 import org.rebecalang.modeltransformer.ros.Rebeca2ROSProperties;
@@ -31,6 +30,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.stereotype.Component;
 
+@SuppressWarnings("deprecation")
 @Component
 public class Transform {
 
@@ -49,7 +49,7 @@ public class Transform {
 	@Autowired
 	Rebeca2ROSModelTransformer rebeca2ROSModelTransformer;
 	
-	@SuppressWarnings("static-access")
+	@SuppressWarnings({ "static-access", "resource"})
 	public static void main(String[] args) {
 		ApplicationContext context = new AnnotationConfigApplicationContext(CompilerConfig.class, ModelTransformerConfig.class);
         Transform transform = context.getBean(Transform.class);
@@ -116,14 +116,6 @@ public class Transform {
 			// Set Rebeca file reference.
 			File rebecaFile = new File(commandLine.getOptionValue("source"));
 
-			// Set output location. Default location is rmc-output folder.
-			File destination;
-			if (commandLine.hasOption("output")) {
-				destination = new File(commandLine.getOptionValue("output"));
-			} else {
-				destination = new File("output-dir");
-			}
-
 			CoreVersion coreVersion = null;
 			if (commandLine.hasOption("version")) {
 				String version = commandLine.getOptionValue("version");
@@ -173,8 +165,6 @@ public class Transform {
 				return;
 			}
 			
-			RebecaModel rebecaModel = compilationResult.getFirst();
-
 			if (commandLine.hasOption("target")) {
 				String target = commandLine.getOptionValue("target");
 				if (target.equalsIgnoreCase("ROS")) {
@@ -191,19 +181,17 @@ public class Transform {
 						System.out.println("Rebeca to RIL transformer only works for Core Rebeca models (for now).");
 						return;
 					}
-					if (extension.contains(CoreVersion.CORE_2_0)) {
+					if (coreVersion == CoreVersion.CORE_2_0) {
 						System.out.println("Rebeca to RIL transformer works for Rebeca core 2.1 or upper.");
 						return;						
 					}
-					RILModel transformedRILModel = transform.rebeca2RILModelTransformer.transformModel(compilationResult, extension, coreVersion);
-					
 				} else if (target.equalsIgnoreCase("SOLIDITY")) {
 					if (extension.contains(CompilerExtension.TIMED_REBECA) ||
 							extension.contains(CompilerExtension.PROBABILISTIC_REBECA)) {
 						System.out.println("Rebeca to Solidity transformer only works for Core Rebeca models (for now).");
 						return;
 					}
-					if (extension.contains(CoreVersion.CORE_2_0)) {
+					if (coreVersion == CoreVersion.CORE_2_0) {
 						System.out.println("Rebeca to Solidity transformer works for Rebeca core 2.1 or upper.");
 						return;						
 					}

@@ -19,11 +19,11 @@ public class MethodCallInstructionBean extends AbstractCallingInstructionBean {
 
 	@Override
 	public String toString() {
-		String string = base + "." + methodName + "( ";
+		String string = base + "." + methodName + "(";
 		for (Entry<String, Object> entry : parameters.entrySet()) {
 			string += entry.getKey() + "->" + entry.getValue().toString() + ", ";
 		}
-		return string + ") -> " + (functionCallResult == null ? "" : " -> " + functionCallResult);
+		return string + ")" + (functionCallResult == null ? "" : (" -> " + functionCallResult));
 	}
 
 	public Variable getFunctionCallResult() {

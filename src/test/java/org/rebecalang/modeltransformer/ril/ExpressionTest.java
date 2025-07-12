@@ -45,6 +45,40 @@ public class ExpressionTest {
 	}
 
 	@Test
+	public void MethodCall() throws IOException {
+		
+		String rebecaModel = 
+				"""
+				reactiveclass Test1 (2) {
+					msgsrv a() {
+						self.b(1);
+						b(2);
+					}
+					int b(int a) {
+					}
+				}
+				main{}
+				""";
+		File model = FileUtils.createTempFile(rebecaModel);
+		
+		Set<CompilerExtension> extension = new HashSet<CompilerExtension>();
+		Pair<RebecaModel, SymbolTable> compilationResult = 
+				compileModel(model, extension, CoreVersion.CORE_2_3);
+		
+		RILModel transformModel = 
+				rebeca2RIL.transformModel(compilationResult, extension, CoreVersion.CORE_2_3);
+		
+		ArrayList<InstructionBean> instructionList = transformModel.getInstructionList("Test1.a");
+		InstructionBean instructionBean = instructionList.get(2);
+		
+		Assertions.assertEquals(MethodCallInstructionBean.class, instructionBean.getClass());
+		MethodCallInstructionBean methodCIBean = 
+				(MethodCallInstructionBean) instructionBean;
+		Assertions.assertEquals("Test1.b$int", methodCIBean.getMethodName());
+		Assertions.assertEquals("self", methodCIBean.getBase().getVarName());
+	}
+	
+	@Test
 	public void MsgsrvCall() throws IOException {
 		
 		String rebecaModel = 
@@ -74,7 +108,7 @@ public class ExpressionTest {
 		Assertions.assertEquals("Test1.a", msgsrvCIBean.getMethodName());
 		Assertions.assertEquals("self", msgsrvCIBean.getBase().getVarName());
 	}
-	
+
 	@Test
 	public void Expression() throws IOException {
 		
@@ -143,16 +177,12 @@ public class ExpressionTest {
 		
 		ArrayList<InstructionBean> instructionList = transformModel.getInstructionList("main");
 		
-		InstructionBean firstInstance = instructionList.get(2);
-		Assertions.assertEquals(AssignmentInstructionBean.class, 
+		InstructionBean firstInstance = instructionList.get(3);
+		Assertions.assertEquals(RebecInstantiationInstructionBean.class, 
 				firstInstance.getClass());
-		Assertions.assertEquals(RebecInstantiationInstructionBean.class,
-				((AssignmentInstructionBean)firstInstance).getFirstOperand().getClass());
 		
-		InstructionBean secondInstance = instructionList.get(2);
-		Assertions.assertEquals(AssignmentInstructionBean.class, 
+		InstructionBean secondInstance = instructionList.get(8);
+		Assertions.assertEquals(RebecInstantiationInstructionBean.class, 
 				secondInstance.getClass());
-		Assertions.assertEquals(RebecInstantiationInstructionBean.class,
-				((AssignmentInstructionBean)secondInstance).getFirstOperand().getClass());
 	}
 }

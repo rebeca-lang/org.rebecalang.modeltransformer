@@ -8,8 +8,6 @@ import java.util.Set;
 
 import org.rebecalang.compiler.modelcompiler.SymbolTable;
 import org.rebecalang.compiler.modelcompiler.abstractrebeca.AbstractTypeSystem;
-import org.rebecalang.compiler.modelcompiler.corerebeca.CoreRebecaTypeSystem;
-import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.BaseClassDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.BinaryExpression;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.BlockStatement;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.BreakStatement;
@@ -44,7 +42,6 @@ import org.rebecalang.compiler.utils.CodeCompilationException;
 import org.rebecalang.compiler.utils.CompilerExtension;
 import org.rebecalang.compiler.utils.CoreVersion;
 import org.rebecalang.compiler.utils.Pair;
-import org.rebecalang.compiler.utils.TypesUtilities;
 import org.rebecalang.modeltransformer.ril.AbstractRILModelTransformer;
 import org.rebecalang.modeltransformer.ril.RILModel;
 import org.rebecalang.modeltransformer.ril.RILUtilities;
@@ -189,7 +186,10 @@ public class CoreRebecaModel2RILTransformer extends AbstractRILModelTransformer 
 			}
 		}
 		
-		transformedRILModel.addMethod("main", transformMainBlock(rebecaModel));
+		ArrayList<InstructionBean> mainBlockInstruction = 
+				transformMainBlock(rebecaModel);
+		mainBlockInstruction.add(new EndMsgSrvInstructionBean());
+		transformedRILModel.addMethod("main", mainBlockInstruction);
 		
 		return transformedRILModel;
 	}
@@ -237,20 +237,15 @@ public class CoreRebecaModel2RILTransformer extends AbstractRILModelTransformer 
 			for(int cnt = 0; cnt < mrd.getBindings().size(); cnt++) {
 				Expression binding = mrd.getBindings().get(cnt);
 				Type bindingType = binding.getType();
-//				rip.getBindings().add(null);
 				
 				BinaryExpression be = new BinaryExpression();
 				setBindingsInstructions.add(be);
 				be.setOperator("=");
-//				be.setCharacter(mrd.getCharacter());
-//				be.setLineNumber(mrd.getLineNumber());
 				be.setType(bindingType);
 				be.setRight(binding);
 
 				DotPrimary left = new DotPrimary();
 				be.setLeft(left);
-//				left.setCharacter(mrd.getCharacter());
-//				left.setLineNumber(mrd.getLineNumber());
 				left.setType(bindingType);
 				TermPrimary base = new TermPrimary();
 				base.setType(bindingType);
@@ -260,9 +255,7 @@ public class CoreRebecaModel2RILTransformer extends AbstractRILModelTransformer 
 				variable.setType(bindingType);
 				variable.setName(knownrebecsNames.get(mrd.getType().getTypeName()).get(cnt));
 				left.setRight(variable);
-
 			}
-//			rip.getBindings().addAll(mrd.getBindings());
 		}
 		blockStatement.getStatements().addAll(setBindingsInstructions);
 		ArrayList<InstructionBean> instructions = generateMethodRIL(null, "main", blockStatement);
