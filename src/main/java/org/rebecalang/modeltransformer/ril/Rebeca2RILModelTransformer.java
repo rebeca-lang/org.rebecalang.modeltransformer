@@ -58,7 +58,6 @@ public class Rebeca2RILModelTransformer {
 			modelTransformer = timedRebecaModelTransformer;
 		} else {
 			appContext.registerAlias("coreRebecaTypeSystem", "typeSystem");
-			appContext.registerAlias("coreRebecaTypeSystem", "typeSystem");
 			modelTransformer = coreRebecaModelTransformer;
 		}
 		

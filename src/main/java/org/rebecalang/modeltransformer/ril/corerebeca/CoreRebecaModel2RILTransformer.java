@@ -208,7 +208,8 @@ public class CoreRebecaModel2RILTransformer extends AbstractRILModelTransformer 
 			}
 		}
 		for(FieldDeclaration fd : rcd.getKnownRebecs()) {
-			retValue.add(fd.getVariableDeclarators().get(0).getVariableName());
+			for(VariableDeclarator vd : fd.getVariableDeclarators())
+				retValue.add(vd.getVariableName());
 		}
 		return retValue;
 	}
