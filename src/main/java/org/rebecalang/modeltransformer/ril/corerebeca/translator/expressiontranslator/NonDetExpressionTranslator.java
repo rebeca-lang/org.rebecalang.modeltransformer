@@ -5,8 +5,11 @@ import java.util.ArrayList;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Expression;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.NonDetExpression;
 import org.rebecalang.modeltransformer.ril.Rebeca2RILExpressionTranslatorContainer;
+import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.AssignmentInstructionBean;
+import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.DeclarationInstructionBean;
 import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.InstructionBean;
 import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.NonDetValue;
+import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.Variable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
@@ -24,13 +27,19 @@ public class NonDetExpressionTranslator extends AbstractExpressionTranslator {
 	@Override
 	public Object translate(Expression expression , ArrayList<InstructionBean> instructions) {
 		NonDetExpression nonDetExpression = (NonDetExpression) expression;
+		Variable tempVariable = getTempVariable();
+		instructions.add(new DeclarationInstructionBean(tempVariable.getVarName()));
+		
 		NonDetValue nonDetValue = new NonDetValue();
 		for(Expression nonDetChoice : nonDetExpression.getChoices()) {
 			Object value = expressionTranslatorContainer.translate(nonDetChoice, instructions);
 			nonDetValue.addNonDetValue(value);
 		}
 		
-		return nonDetValue;
+		AssignmentInstructionBean assignmentInstruction = new AssignmentInstructionBean(tempVariable, 
+				nonDetValue , null, null);
+		instructions.add(assignmentInstruction);
+		return tempVariable;
 	}
 
 }

@@ -28,6 +28,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
+import com.ibm.icu.impl.Assert;
+
 @ContextConfiguration(classes = {CompilerConfig.class, ModelTransformerConfig.class}) 
 @SpringJUnitConfig
 public class ExpressionTest {
@@ -184,5 +186,88 @@ public class ExpressionTest {
 		InstructionBean secondInstance = instructionList.get(8);
 		Assertions.assertEquals(RebecInstantiationInstructionBean.class, 
 				secondInstance.getClass());
+	}
+
+	@Test
+	public void complexDotExpression() throws IOException {
+		
+		String rebecaModel = 
+				"""
+				reactiveclass Test1 (2) {
+					knownrebecs{Test1 t;}
+					msgsrv m1() {
+						t.m1();
+					}
+				}
+				main{
+					Test1 t1(t2):();
+					Test1 t2(t1):();
+				}
+				""";
+		File model = FileUtils.createTempFile(rebecaModel);
+		
+		Set<CompilerExtension> extension = new HashSet<CompilerExtension>();
+		Pair<RebecaModel, SymbolTable> compilationResult = 
+				compileModel(model, extension, CoreVersion.CORE_2_3);
+		
+		RILModel transformModel = 
+				rebeca2RIL.transformModel(compilationResult, extension, CoreVersion.CORE_2_3);
+		
+	}
+
+	@Test
+	public void VariableDeclarationWithInitializationExpression() throws IOException {
+		
+		String rebecaModel = 
+				"""
+				reactiveclass Test1 (2) {
+					knownrebecs{Test1 t;}
+					msgsrv m1() {
+						int a = 4 + 5;
+					}
+				}
+				main{
+				}
+				""";
+		File model = FileUtils.createTempFile(rebecaModel);
+		
+		Set<CompilerExtension> extension = new HashSet<CompilerExtension>();
+		Pair<RebecaModel, SymbolTable> compilationResult = 
+				compileModel(model, extension, CoreVersion.CORE_2_3);
+		
+		RILModel transformModel = 
+				rebeca2RIL.transformModel(compilationResult, extension, CoreVersion.CORE_2_3);
+		ArrayList<InstructionBean> instructionList = 
+				transformModel.getInstructionList("Test1.m1");
+		Assertions.assertEquals(7, instructionList.size());
+		
+	}
+	
+	@Test
+	public void NondetExpression() throws IOException {
+		
+		String rebecaModel = 
+				"""
+				reactiveclass Test1 (2) {
+					knownrebecs{Test1 t;}
+					msgsrv m1() {
+						int a = ?(4, 2+3);
+					}
+				}
+				main{
+				}
+				""";
+		File model = FileUtils.createTempFile(rebecaModel);
+		
+		Set<CompilerExtension> extension = new HashSet<CompilerExtension>();
+		Pair<RebecaModel, SymbolTable> compilationResult = 
+				compileModel(model, extension, CoreVersion.CORE_2_3);
+		
+		RILModel transformModel = 
+				rebeca2RIL.transformModel(compilationResult, extension, CoreVersion.CORE_2_3);
+		ArrayList<InstructionBean> instructionList = 
+				transformModel.getInstructionList("Test1.m1");
+		Assertions.assertEquals(9, instructionList.size());
+		
 	}
 }
