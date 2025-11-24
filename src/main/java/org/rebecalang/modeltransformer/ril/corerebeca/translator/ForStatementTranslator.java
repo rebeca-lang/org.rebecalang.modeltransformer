@@ -33,7 +33,13 @@ public class ForStatementTranslator extends AbstractStatementTranslator {
 		ForStatement forStatement = (ForStatement) statement;
 		instructions.add(new PushARInstructionBean());
 		ForInitializer forInitializer = forStatement.getForInitializer();
-		statementTranslatorContainer.translate(forInitializer.getFieldDeclaration(), instructions);
+		if(forInitializer.getFieldDeclaration() != null)
+			statementTranslatorContainer.translate(forInitializer.getFieldDeclaration(), instructions);
+		List<Expression> expressions = forInitializer.getExpressions();
+		if(expressions != null) {
+			for(Expression expression : expressions)
+				statementTranslatorContainer.translate(expression, instructions);
+		}
 
 		int beginOfForLineNumber = instructions.size();
 		String computedMethodName = statementTranslatorContainer.getComputedMethodName();
