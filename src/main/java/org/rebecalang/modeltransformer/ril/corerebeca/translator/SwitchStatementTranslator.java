@@ -42,7 +42,7 @@ public class SwitchStatementTranslator extends AbstractStatementTranslator {
 		Object valueOfCaseExpression = expressionTranslatorContainer
 				.translate(switchStatement.getExpression(), instructions);
 		Variable tempVariable = AbstractExpressionTranslator.getTempVariable();
-		instructions.add(new DeclarationInstructionBean(tempVariable.getVarName()));
+		instructions.add(new DeclarationInstructionBean(tempVariable.getVarName(), switchStatement.getExpression().getType()));
 		for (SwitchStatementGroup ssg : switchStatementGroups) {
 			if (ssg.getExpression() == null)
 				continue;

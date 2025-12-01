@@ -1,5 +1,6 @@
 package org.rebecalang.modeltransformer.ril.corerebeca.translator.expressiontranslator;
 
+import org.rebecalang.compiler.modelcompiler.corerebeca.CoreRebecaTypeSystem;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Expression;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.InstanceofExpression;
 import org.rebecalang.modeltransformer.ril.Rebeca2RILExpressionTranslatorContainer;
@@ -31,7 +32,7 @@ public class InstanceofExpressionTranslator extends AbstractExpressionTranslator
         Object rightSide = ioExpression.getEvaluationType().getTypeName();
 
         Variable tempVariable = getTempVariable();
-        instructions.add(new DeclarationInstructionBean(tempVariable.getVarName()));
+        instructions.add(new DeclarationInstructionBean(tempVariable.getVarName(), CoreRebecaTypeSystem.BOOLEAN_TYPE));
         AssignmentInstructionBean assignmentInstruction = new AssignmentInstructionBean(tempVariable,
                 leftSide, rightSide, operator);
         instructions.add(assignmentInstruction);

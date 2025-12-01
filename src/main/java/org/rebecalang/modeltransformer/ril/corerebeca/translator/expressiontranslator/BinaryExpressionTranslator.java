@@ -41,7 +41,7 @@ public class BinaryExpressionTranslator extends AbstractExpressionTranslator {
 			instructions.add(assignmentInstruction);				
 		} else {
 			Variable tempVariable = getTempVariable();
-			instructions.add(new DeclarationInstructionBean(tempVariable.getVarName()));
+			instructions.add(new DeclarationInstructionBean(tempVariable.getVarName(), binaryExpression.getType()));
 			AssignmentInstructionBean assignmentInstruction = new AssignmentInstructionBean(tempVariable, 
 					leftSide, rightSide, operator);
 			instructions.add(assignmentInstruction);

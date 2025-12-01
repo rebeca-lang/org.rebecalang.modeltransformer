@@ -35,7 +35,7 @@ public class FieldDeclarationTranslator extends AbstractStatementTranslator {
 		FieldDeclaration fieldDeclaration = (FieldDeclaration) statement;
 		List<VariableDeclarator> variableDeclarators = fieldDeclaration.getVariableDeclarators();
 		for (VariableDeclarator vd : variableDeclarators) {
-			instructions.add(new DeclarationInstructionBean(vd.getVariableName()));
+			instructions.add(new DeclarationInstructionBean(vd.getVariableName(), fieldDeclaration.getType()));
 			if (vd.getVariableInitializer() != null) {
 				if(vd.getVariableInitializer() instanceof ArrayVariableInitializer)
 					throw new RuntimeException("Array initialization is not handled yet!");

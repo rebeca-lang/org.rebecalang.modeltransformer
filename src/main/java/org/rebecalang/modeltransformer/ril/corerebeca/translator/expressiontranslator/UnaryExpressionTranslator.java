@@ -33,7 +33,7 @@ public class UnaryExpressionTranslator extends AbstractExpressionTranslator {
 				.translate(unaryExpression.getExpression(), instructions);
 
 		Variable tempVariable = getTempVariable();
-		instructions.add(new DeclarationInstructionBean(tempVariable.getVarName()));
+		instructions.add(new DeclarationInstructionBean(tempVariable.getVarName(), unaryExpression.getType()));
 		AssignmentInstructionBean assignmentInstruction = null;
 			assignmentInstruction = new AssignmentInstructionBean(tempVariable, translatedExpression, null, 
 					operator);

@@ -1,19 +1,17 @@
 package org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction;
 
+import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Type;
+
 public class DeclarationInstructionBean extends InstructionBean {
 
 	String varName;
+	Type type;
 	
-	public DeclarationInstructionBean(String varName) {
+	public DeclarationInstructionBean(String varName, Type type) {
 		super();
 		this.varName = varName;
+		this.type = type;
 	}
-
-//	@Override
-//	public void interpret(ActorState actorState, State globalState) {
-//		actorState.addVariableToRecentScope(varName, 0);
-//		actorState.increasePC();
-//	}
 	
 	public String getVarName() {
 		return varName;
@@ -22,6 +20,14 @@ public class DeclarationInstructionBean extends InstructionBean {
 		this.varName = varName;
 	}
 
+	public Type getType() {
+		return type;
+	}
+	
+	public void setType(Type type) {
+		this.type = type;
+	}
+	
 	@Override
 	public String toString() {
 		return "declare " + varName;

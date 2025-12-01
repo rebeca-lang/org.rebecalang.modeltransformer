@@ -28,7 +28,7 @@ public class NonDetExpressionTranslator extends AbstractExpressionTranslator {
 	public Object translate(Expression expression , ArrayList<InstructionBean> instructions) {
 		NonDetExpression nonDetExpression = (NonDetExpression) expression;
 		Variable tempVariable = getTempVariable();
-		instructions.add(new DeclarationInstructionBean(tempVariable.getVarName()));
+		instructions.add(new DeclarationInstructionBean(tempVariable.getVarName(), nonDetExpression.getType()));
 		
 		NonDetValue nonDetValue = new NonDetValue();
 		for(Expression nonDetChoice : nonDetExpression.getChoices()) {

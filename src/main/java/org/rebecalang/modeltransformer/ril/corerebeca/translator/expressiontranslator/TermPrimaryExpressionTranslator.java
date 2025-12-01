@@ -114,7 +114,7 @@ public class TermPrimaryExpressionTranslator extends AbstractExpressionTranslato
 		Variable tempVariable = null;
 		if (termPrimary.getType() != CoreRebecaTypeSystem.VOID_TYPE) {
 			tempVariable = AbstractExpressionTranslator.getTempVariable();
-			instructions.add(new DeclarationInstructionBean(tempVariable.getVarName()));
+			instructions.add(new DeclarationInstructionBean(tempVariable.getVarName(), termPrimary.getType()));
 		}
 
 		if (termPrimary.getLabel() == CoreRebecaLabelUtility.BUILT_IN_METHOD) {

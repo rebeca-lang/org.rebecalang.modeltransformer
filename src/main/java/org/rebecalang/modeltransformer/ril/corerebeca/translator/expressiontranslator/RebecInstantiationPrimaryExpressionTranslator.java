@@ -94,7 +94,7 @@ public class RebecInstantiationPrimaryExpressionTranslator extends AbstractExpre
 			assert false;
 		}
 		Variable tempVariable = getTempVariable();
-		instructions.add(new DeclarationInstructionBean(tempVariable.getVarName()));
+		instructions.add(new DeclarationInstructionBean(tempVariable.getVarName(), rip.getType()));
 
 		RebecInstantiationInstructionBean aiib = new RebecInstantiationInstructionBean();
 		aiib.setBindings(bindings);
