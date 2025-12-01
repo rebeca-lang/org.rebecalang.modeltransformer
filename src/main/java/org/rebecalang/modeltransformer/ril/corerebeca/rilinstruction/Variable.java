@@ -1,20 +1,23 @@
 package org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 
 @SuppressWarnings("serial")
 public class Variable implements Serializable {
 	
 	String varName;
 	Variable base;
+	ArrayList<Object> indeces;
 
 	
 	public Variable(String varName) {
 		this.varName = varName;
+		indeces = new ArrayList<Object>();
 	}
 
 	public Variable(Variable base, String varName) {
-		this.varName = varName;
+		this(varName);
 		this.base = base;
 	}
 	
@@ -36,8 +39,16 @@ public class Variable implements Serializable {
 	
 	@Override
 	public String toString() {
-		return ((base == null) ? "" : (base.getVarName() + ".")) + varName;
+		String retValue = ((base == null) ? "" : (base.getVarName() + ".")) + varName;
+		for(Object var : indeces)
+			retValue += "[" + var + "]";
+		return retValue;
+	}
+	public void addIndex(Object object) {
+		indeces.add(object);
 	}
 
-
+	public ArrayList<Object> getIndeces() {
+		return indeces;
+	}
 }

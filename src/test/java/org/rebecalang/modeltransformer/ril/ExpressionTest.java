@@ -24,11 +24,10 @@ import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.Instruction
 import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.MethodCallInstructionBean;
 import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.MsgsrvCallInstructionBean;
 import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.RebecInstantiationInstructionBean;
+import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.Variable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
-
-import com.ibm.icu.impl.Assert;
 
 @ContextConfiguration(classes = {CompilerConfig.class, ModelTransformerConfig.class}) 
 @SpringJUnitConfig
@@ -268,6 +267,35 @@ public class ExpressionTest {
 		ArrayList<InstructionBean> instructionList = 
 				transformModel.getInstructionList("Test1.m1");
 		Assertions.assertEquals(9, instructionList.size());
+	}
+	
+	@Test
+	public void testArrayAccess() throws IOException {
 		
+		String rebecaModel = 
+				"""
+				reactiveclass Test1 (2) {
+					statevars {int[4] b;}
+					msgsrv a() {
+						b[1 + b[0]] = 2 * 7;
+					}
+				}
+				main{}
+				""";
+		File model = FileUtils.createTempFile(rebecaModel);
+		
+		Set<CompilerExtension> extension = new HashSet<CompilerExtension>();
+		Pair<RebecaModel, SymbolTable> compilationResult = 
+				compileModel(model, extension, CoreVersion.CORE_2_3);
+		
+		RILModel transformModel = 
+				rebeca2RIL.transformModel(compilationResult, extension, CoreVersion.CORE_2_3);
+		
+		ArrayList<InstructionBean> instructionList = transformModel.getInstructionList("Test1.a");
+		
+		AssignmentInstructionBean aib = (AssignmentInstructionBean) instructionList.get(2);
+		Assertions.assertEquals(AssignmentInstructionBean.class, 
+				aib.getClass());
+		Assertions.assertEquals(1, ((Variable)aib.getSecondOperand()).getIndeces().size());
 	}
 }

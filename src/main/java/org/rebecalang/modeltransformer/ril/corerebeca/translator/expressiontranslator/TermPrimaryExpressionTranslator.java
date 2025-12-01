@@ -68,8 +68,14 @@ public class TermPrimaryExpressionTranslator extends AbstractExpressionTranslato
 
 	public Object translate(Type baseType, Variable baseVariable, TermPrimary termPrimary,
 			ArrayList<InstructionBean> instructions) {
-		if (termPrimary.getParentSuffixPrimary() == null)
-			return (new Variable(baseVariable, termPrimary.getName()));
+		if (termPrimary.getParentSuffixPrimary() == null) {
+			Variable variable = new Variable(baseVariable, termPrimary.getName());
+			for (Expression argument : termPrimary.getIndices()) {
+				variable.addIndex(expressionTranslatorContainer.translate(
+						argument, instructions));
+			}
+			return variable;
+		}
 
 		List<Expression> arguments = termPrimary.getParentSuffixPrimary().getArguments();
 		ArrayList<Object> argumentsValues = new ArrayList<Object>();
