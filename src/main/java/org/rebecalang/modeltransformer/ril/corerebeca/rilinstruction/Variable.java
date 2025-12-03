@@ -51,4 +51,7 @@ public class Variable implements Serializable {
 	public ArrayList<Object> getIndeces() {
 		return indeces;
 	}
+	public void setIndeces(ArrayList<Object> indeces) {
+		this.indeces = indeces;
+	}
 }

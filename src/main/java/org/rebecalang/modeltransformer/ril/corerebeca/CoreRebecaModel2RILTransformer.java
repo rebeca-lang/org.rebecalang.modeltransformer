@@ -50,6 +50,7 @@ import org.rebecalang.modeltransformer.ril.Rebeca2RILStatementTranslatorContaine
 import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.EndMethodInstructionBean;
 import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.EndMsgSrvInstructionBean;
 import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.InstructionBean;
+import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.RebecInstantiationInstructionBean;
 import org.rebecalang.modeltransformer.ril.corerebeca.translator.BlockStatementTranslator;
 import org.rebecalang.modeltransformer.ril.corerebeca.translator.BreakStatementTranslator;
 import org.rebecalang.modeltransformer.ril.corerebeca.translator.ConditionalStatementTranslator;
@@ -260,7 +261,23 @@ public class CoreRebecaModel2RILTransformer extends AbstractRILModelTransformer 
 		}
 		blockStatement.getStatements().addAll(setBindingsInstructions);
 		ArrayList<InstructionBean> instructions = generateMethodRIL(null, "main", blockStatement);
-		return instructions;
+		ArrayList<InstructionBean> instantiations = new ArrayList<InstructionBean>();
+		instantiations.add(instructions.get(0));
+		int cnt = 0;
+		while(true) {
+			if(cnt >= instructions.size())
+				break;
+			if(instructions.get(cnt) instanceof RebecInstantiationInstructionBean) {
+				instantiations.add(instructions.remove(cnt - 2));
+				instantiations.add(instructions.remove(cnt - 2));
+				instantiations.add(instructions.remove(cnt - 2));
+				instantiations.add(instructions.remove(cnt - 1));
+				cnt-=2;
+			} else
+				cnt++;
+		}
+		instantiations.addAll(instructions);
+		return instantiations;
 	}
 
 	private RebecInstantiationPrimary getRebecInstantiationPrimary(FieldDeclaration fd) {

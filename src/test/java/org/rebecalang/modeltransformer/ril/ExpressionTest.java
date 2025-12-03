@@ -182,7 +182,7 @@ public class ExpressionTest {
 		Assertions.assertEquals(RebecInstantiationInstructionBean.class, 
 				firstInstance.getClass());
 		
-		InstructionBean secondInstance = instructionList.get(8);
+		InstructionBean secondInstance = instructionList.get(7);
 		Assertions.assertEquals(RebecInstantiationInstructionBean.class, 
 				secondInstance.getClass());
 	}
@@ -297,5 +297,34 @@ public class ExpressionTest {
 		Assertions.assertEquals(AssignmentInstructionBean.class, 
 				aib.getClass());
 		Assertions.assertEquals(1, ((Variable)aib.getSecondOperand()).getIndeces().size());
+	}
+	
+	@Test
+	public void testEnviroment() throws IOException {
+		
+		String rebecaModel = 
+				"""
+				env int[2] a = {20, 3};
+				reactiveclass Test1 (2) {
+					msgsrv a() {
+						int b = a[1];
+					}
+				}
+				main{}
+				""";
+		File model = FileUtils.createTempFile(rebecaModel);
+		
+		Set<CompilerExtension> extension = new HashSet<CompilerExtension>();
+		Pair<RebecaModel, SymbolTable> compilationResult = 
+				compileModel(model, extension, CoreVersion.CORE_2_3);
+		
+		RILModel transformModel = 
+				rebeca2RIL.transformModel(compilationResult, extension, CoreVersion.CORE_2_3);
+		
+		ArrayList<InstructionBean> instructionList = transformModel.getInstructionList("Test1.a");
+		
+		AssignmentInstructionBean aib = (AssignmentInstructionBean) instructionList.get(2);
+		Assertions.assertEquals(AssignmentInstructionBean.class, 
+				aib.getClass());
 	}
 }

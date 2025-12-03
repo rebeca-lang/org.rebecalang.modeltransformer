@@ -29,8 +29,11 @@ public class BlockStatementTranslator extends AbstractStatementTranslator {
 	public void translate(Statement statement, ArrayList<InstructionBean> instructions) {
 		BlockStatement blockStatement = (BlockStatement) statement;
 		instructions.add(new PushARInstructionBean());
-		for(Statement insideStatement : blockStatement.getStatements())
+		for(Statement insideStatement : blockStatement.getStatements()) {
+			if(insideStatement.getClass() == Statement.class)
+				continue;
 			statementTranslatorContainer.translate(insideStatement, instructions);
+		}
 		instructions.add(new PopARInstructionBean());
 	}
 
