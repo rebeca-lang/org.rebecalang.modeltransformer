@@ -17,9 +17,9 @@ import org.springframework.stereotype.Component;
 public abstract class AbstractExpressionTranslator {
 
 	public final static String TEMP_VAR_PREFIX = "$TEMP_EXP$";
-	public final static String RETURN_METHOD_NAME = "$RETURN-NAME$";
-	public final static String RETURN_METHOD_LINE = "$RETURN-LINE$";
-	public static final String RETURN_VALUE = "$RETURN_VALUE$";
+//	public final static String RETURN_METHOD_NAME = "$RETURN-NAME$";
+//	public final static String RETURN_METHOD_LINE = "$RETURN-LINE$";
+//	public static final String RETURN_VALUE = "$RETURN_VALUE$";
 
 	
 	static int counter = 0;

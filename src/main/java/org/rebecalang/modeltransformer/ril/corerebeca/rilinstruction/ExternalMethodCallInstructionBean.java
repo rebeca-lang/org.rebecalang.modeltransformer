@@ -9,12 +9,11 @@ public class ExternalMethodCallInstructionBean extends AbstractCallingInstructio
 	private Variable functionCallResult;
 
 	public ExternalMethodCallInstructionBean(Variable base, String methodName) {
-		this(base, methodName, new TreeMap<String, Object>(), null);
+		this(base, methodName, new TreeMap<String, Object>());
 	}
 
-	public ExternalMethodCallInstructionBean(Variable base, String methodName, Map<String, Object> parameters, Variable functionCallResult) {
+	public ExternalMethodCallInstructionBean(Variable base, String methodName, Map<String, Object> parameters) {
 		super(base, methodName, parameters);
-		this.setFunctionCallResult(functionCallResult);
 	}
 
 	@Override

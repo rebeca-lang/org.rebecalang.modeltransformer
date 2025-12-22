@@ -24,6 +24,7 @@ import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.Instruction
 import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.MethodCallInstructionBean;
 import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.MsgsrvCallInstructionBean;
 import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.RebecInstantiationInstructionBean;
+import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.ReturnInstructionBean;
 import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.Variable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -46,6 +47,82 @@ public class ExpressionTest {
 	}
 
 	@Test
+	public void returnTest() throws IOException {
+		
+		String rebecaModel = 
+				"""
+				reactiveclass Test (2) {
+					knownrebecs{Test t;}
+					Test(int a){}
+					msgsrv m1() {
+						return;
+					}
+					int f1() {
+						int a = 10;
+						return a + 6;
+						int b = 4;
+					}
+				}
+				main{}
+				""";
+		File model = FileUtils.createTempFile(rebecaModel);
+		
+		Set<CompilerExtension> extension = new HashSet<CompilerExtension>();
+		Pair<RebecaModel, SymbolTable> compilationResult = 
+				compileModel(model, extension, CoreVersion.CORE_2_2);
+		
+		RILModel transformModel = 
+				rebeca2RIL.transformModel(compilationResult, extension, CoreVersion.CORE_2_3);
+		
+		ArrayList<InstructionBean> instructionList = transformModel.getInstructionList("Test.f1");
+		InstructionBean instructionBean = instructionList.get(5);
+		
+		Assertions.assertEquals(ReturnInstructionBean.class, instructionBean.getClass());
+		ReturnInstructionBean rib = (ReturnInstructionBean) instructionBean;
+		Assertions.assertEquals("$TEMP_EXP$17", ((Variable)rib.getReturnValue()).getVarName());
+	}
+
+	
+	@Test
+	public void fieldDeclarationTest() throws IOException {
+		
+		String rebecaModel = 
+				"""
+				reactiveclass Test (2) {
+					knownrebecs{Test t;}
+					Test(int a){}
+					
+					msgsrv a(Test r) {
+						new Test(r):(1);
+						new Test(r):(2).a();
+						Test t = new Test(r):(3 + 4);
+						Test t2 = t;
+					}
+					void a(){}
+				}
+				main{}
+				""";
+		File model = FileUtils.createTempFile(rebecaModel);
+		
+		Set<CompilerExtension> extension = new HashSet<CompilerExtension>();
+		Pair<RebecaModel, SymbolTable> compilationResult = 
+				compileModel(model, extension, CoreVersion.CORE_2_2);
+		
+		RILModel transformModel = 
+				rebeca2RIL.transformModel(compilationResult, extension, CoreVersion.CORE_2_3);
+		
+		ArrayList<InstructionBean> instructionList = transformModel.getInstructionList("Test.a$Test");
+		InstructionBean instructionBean = instructionList.get(4);
+		
+		Assertions.assertEquals(MethodCallInstructionBean.class, instructionBean.getClass());
+		MethodCallInstructionBean methodCIBean = 
+				(MethodCallInstructionBean) instructionBean;
+		Assertions.assertEquals("Test.Test$int", methodCIBean.getMethodName());
+		Assertions.assertEquals("$TEMP_EXP$0", methodCIBean.getBase().getVarName());
+	}
+
+	
+	@Test
 	public void MethodCall() throws IOException {
 		
 		String rebecaModel = 
@@ -54,6 +131,8 @@ public class ExpressionTest {
 					msgsrv a() {
 						self.b(1);
 						b(2);
+						int t;
+						t = b(2+3);
 					}
 					int b(int a) {
 					}
@@ -161,10 +240,11 @@ public class ExpressionTest {
 				"""
 				reactiveclass Test1 (2) {
 					knownrebecs{Test1 t;}
+					Test1(int r){}
 				}
 				main{
-					Test1 t1(t2):();
-					Test1 t2(t1):();
+					Test1 t1(t2):(2+3);
+					Test1 t2(t1):(4);
 				}
 				""";
 		File model = FileUtils.createTempFile(rebecaModel);
@@ -178,11 +258,11 @@ public class ExpressionTest {
 		
 		ArrayList<InstructionBean> instructionList = transformModel.getInstructionList("main");
 		
-		InstructionBean firstInstance = instructionList.get(3);
+		InstructionBean firstInstance = instructionList.get(4);
 		Assertions.assertEquals(RebecInstantiationInstructionBean.class, 
 				firstInstance.getClass());
 		
-		InstructionBean secondInstance = instructionList.get(7);
+		InstructionBean secondInstance = instructionList.get(10);
 		Assertions.assertEquals(RebecInstantiationInstructionBean.class, 
 				secondInstance.getClass());
 	}

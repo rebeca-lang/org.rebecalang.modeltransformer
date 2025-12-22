@@ -6,10 +6,8 @@ import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ReturnStatem
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Statement;
 import org.rebecalang.modeltransformer.ril.Rebeca2RILExpressionTranslatorContainer;
 import org.rebecalang.modeltransformer.ril.Rebeca2RILStatementTranslatorContainer;
-import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.AssignmentInstructionBean;
 import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.InstructionBean;
-import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.Variable;
-import org.rebecalang.modeltransformer.ril.corerebeca.translator.expressiontranslator.AbstractExpressionTranslator;
+import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.ReturnInstructionBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
@@ -29,8 +27,9 @@ public class ReturnStatementTranslator extends AbstractStatementTranslator {
 	public void translate(Statement statement, ArrayList<InstructionBean> instructions) {
 
 		ReturnStatement returnStatement = (ReturnStatement) statement;
-		Object translatedReturnValue = expressionTranslatorContainer.translate(returnStatement.getExpression(), instructions);
-		instructions.add(new AssignmentInstructionBean(
-				new Variable(AbstractExpressionTranslator.RETURN_VALUE), translatedReturnValue, null, null));
+		Object translatedReturnValue = null;
+		if(returnStatement.getExpression() != null)
+			translatedReturnValue = expressionTranslatorContainer.translate(returnStatement.getExpression(), instructions);
+		instructions.add(new ReturnInstructionBean(translatedReturnValue));
 	}
 }

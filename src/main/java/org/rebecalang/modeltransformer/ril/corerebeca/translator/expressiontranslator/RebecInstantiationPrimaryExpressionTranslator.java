@@ -3,6 +3,7 @@ package org.rebecalang.modeltransformer.ril.corerebeca.translator.expressiontran
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.TreeMap;
 
 import org.rebecalang.compiler.modelcompiler.SymbolTable;
@@ -16,8 +17,10 @@ import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.RebecInstant
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Type;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.VariableDeclarator;
 import org.rebecalang.compiler.utils.CodeCompilationException;
+import org.rebecalang.compiler.utils.Pair;
 import org.rebecalang.modeltransformer.ril.RILUtilities;
 import org.rebecalang.modeltransformer.ril.Rebeca2RILExpressionTranslatorContainer;
+import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.AssignmentInstructionBean;
 import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.DeclarationInstructionBean;
 import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.InstructionBean;
 import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.MethodCallInstructionBean;
@@ -43,14 +46,43 @@ public class RebecInstantiationPrimaryExpressionTranslator extends AbstractExpre
 	@Override
 	public Object translate(Expression expression, ArrayList<InstructionBean> instructions) {
 		RebecInstantiationPrimary rip = (RebecInstantiationPrimary) expression;
-		SymbolTable symbolTable = expressionTranslatorContainer.getSymbolTable();
 
+		Variable tempVariable = getTempVariable();
+		instructions.add(new DeclarationInstructionBean(tempVariable.getVarName(), rip.getType()));
+
+		ArrayList<InstructionBean> tempInstructions = new ArrayList<InstructionBean>();
+		Map<String, Object> bindings = extractBindings(rip, tempInstructions);
+		
+		for(Entry<String, Object> entry : bindings.entrySet()) {
+			Variable var = new Variable(tempVariable, entry.getKey());
+			AssignmentInstructionBean aib = new AssignmentInstructionBean(var, entry.getValue(), null, null);
+			tempInstructions.add(aib);
+		}
+		
+		Pair<MethodInSymbolTableSpecifier, Map<String, Object>> specs = 
+				extractConsructorSpecification(rip, tempInstructions);
+
+		RebecInstantiationInstructionBean aiib = new RebecInstantiationInstructionBean();
+		aiib.setBindings(bindings);
+		aiib.setType(rip.getType());
+		aiib.setResultTarget(tempVariable);
+		instructions.add(aiib);
+
+		instructions.addAll(tempInstructions);
+		String computedMethodName = RILUtilities.computeMethodName(rip.getType(), specs.getFirst());
+		MethodCallInstructionBean mcib = new MethodCallInstructionBean(tempVariable, computedMethodName, specs.getSecond());
+		instructions.add(mcib);
+		
+		return tempVariable;
+	}
+
+	private Map<String, Object> extractBindings(RebecInstantiationPrimary rip, ArrayList<InstructionBean> tempInstructions) {
 		Map<String, Object> bindings = new TreeMap<String, Object>();
 		if(!rip.getBindings().isEmpty()) {
 			List<Object> bindingValues = new ArrayList<Object>();
 			for (Expression argument : rip.getBindings()) {
 				bindingValues.add(expressionTranslatorContainer.translate(
-						argument, instructions));
+						argument, tempInstructions));
 			}
 			try {
 				AbstractTypeSystem typeSystem = (AbstractTypeSystem) appContext.getBean("typeSystem");
@@ -67,14 +99,17 @@ public class RebecInstantiationPrimaryExpressionTranslator extends AbstractExpre
 				assert false;
 			}	
 		}
-		
-		
+		return bindings;
+	}
+	
+	public Pair<MethodInSymbolTableSpecifier, Map<String, Object>> extractConsructorSpecification(RebecInstantiationPrimary rip, ArrayList<InstructionBean> tempInstructions) {
+		SymbolTable symbolTable = expressionTranslatorContainer.getSymbolTable();
 		Map<String, Object> arguments = new TreeMap<String, Object>();
 		ArrayList<Object> argumentsValues = new ArrayList<Object>();
 		ArrayList<Type> argumentsType = new ArrayList<Type>();
 		for (Expression argument : rip.getArguments()) {
 			argumentsValues.add(expressionTranslatorContainer.translate(
-					argument, instructions));
+					argument, tempInstructions));
 			argumentsType.add(argument.getType());
 		}
 		String typeName = rip.getType().getTypeName();
@@ -93,21 +128,8 @@ public class RebecInstantiationPrimaryExpressionTranslator extends AbstractExpre
 			e.printStackTrace();
 			assert false;
 		}
-		Variable tempVariable = getTempVariable();
-		instructions.add(new DeclarationInstructionBean(tempVariable.getVarName(), rip.getType()));
-
-		RebecInstantiationInstructionBean aiib = new RebecInstantiationInstructionBean();
-		aiib.setBindings(bindings);
-		aiib.setType(rip.getType());
-		aiib.setResultTarget(tempVariable);
-		instructions.add(aiib);
-
-		String computedMethodName = RILUtilities.computeMethodName(rip.getType(), castableMethodSpecification);
-		MethodCallInstructionBean mcib = new MethodCallInstructionBean(tempVariable, computedMethodName, arguments, null);
-		instructions.add(mcib);
-		
-		return tempVariable;
+		return new Pair<MethodInSymbolTableSpecifier, Map<String, Object>> 
+			(castableMethodSpecification, arguments);
 	}
-	
 
 }

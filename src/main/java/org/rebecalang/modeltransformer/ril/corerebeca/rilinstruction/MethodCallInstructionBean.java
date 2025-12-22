@@ -2,19 +2,17 @@ package org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction;
 
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.TreeMap;
 
 public class MethodCallInstructionBean extends AbstractCallingInstructionBean {
 
 	private Variable functionCallResult;
 
-	public MethodCallInstructionBean(Variable base, String methodName) {
-		this(base, methodName, new TreeMap<String, Object>(), null);
-	}
+//	public MethodCallInstructionBean(Variable base, String methodName) {
+//		this(base, methodName, new TreeMap<String, Object>(), null);
+//	}
 
-	public MethodCallInstructionBean(Variable base, String methodName, Map<String, Object> parameters, Variable functionCallResult) {
+	public MethodCallInstructionBean(Variable base, String methodName, Map<String, Object> parameters) {
 		super(base, methodName, parameters);
-		this.setFunctionCallResult(functionCallResult);
 	}
 
 	@Override

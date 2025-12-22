@@ -54,10 +54,6 @@ public class TermPrimaryExpressionTranslator extends AbstractExpressionTranslato
 				e.printStackTrace();
 			}
 		}
-//		Variable base = null;
-//		if (!isBuiltInMethod(expression))
-//			base = new Variable("self");
-
 		return translate(baseType, null, (TermPrimary) expression, instructions);
 	}
 
@@ -118,11 +114,15 @@ public class TermPrimaryExpressionTranslator extends AbstractExpressionTranslato
 		}
 
 		if (termPrimary.getLabel() == CoreRebecaLabelUtility.BUILT_IN_METHOD) {
-			instructions.add(new ExternalMethodCallInstructionBean(baseVariable, computedMethodName,
-					passedParameters, tempVariable));
+			ExternalMethodCallInstructionBean externalMethodCallInstructionBean = 
+					new ExternalMethodCallInstructionBean(baseVariable, computedMethodName,
+					passedParameters);
+			externalMethodCallInstructionBean.setFunctionCallResult(tempVariable);
+			instructions.add(externalMethodCallInstructionBean);
 		} else {
-			MethodCallInstructionBean methodCallInstructionBean = new MethodCallInstructionBean(baseVariable,
-					computedMethodName);
+			MethodCallInstructionBean methodCallInstructionBean = 
+					new MethodCallInstructionBean(baseVariable, computedMethodName, 
+					passedParameters);
 			methodCallInstructionBean.setFunctionCallResult(tempVariable);
 			instructions.add(methodCallInstructionBean);
 		}

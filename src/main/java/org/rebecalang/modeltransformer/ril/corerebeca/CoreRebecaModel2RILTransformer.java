@@ -261,23 +261,21 @@ public class CoreRebecaModel2RILTransformer extends AbstractRILModelTransformer 
 		}
 		blockStatement.getStatements().addAll(setBindingsInstructions);
 		ArrayList<InstructionBean> instructions = generateMethodRIL(null, "main", blockStatement);
-		ArrayList<InstructionBean> instantiations = new ArrayList<InstructionBean>();
-		instantiations.add(instructions.get(0));
+		ArrayList<InstructionBean> instantiationVariableDeclarations = new ArrayList<InstructionBean>();
+		instantiationVariableDeclarations.add(instructions.remove(0));
 		int cnt = 0;
 		while(true) {
 			if(cnt >= instructions.size())
 				break;
 			if(instructions.get(cnt) instanceof RebecInstantiationInstructionBean) {
-				instantiations.add(instructions.remove(cnt - 2));
-				instantiations.add(instructions.remove(cnt - 2));
-				instantiations.add(instructions.remove(cnt - 2));
-				instantiations.add(instructions.remove(cnt - 1));
-				cnt-=2;
+//				instantiationVariableDeclarations.add(instructions.remove(cnt - 1));
+				instantiationVariableDeclarations.add(instructions.remove(cnt - 2));
+//				cnt--;
 			} else
 				cnt++;
 		}
-		instantiations.addAll(instructions);
-		return instantiations;
+		instantiationVariableDeclarations.addAll(instructions);
+		return instantiationVariableDeclarations;
 	}
 
 	private RebecInstantiationPrimary getRebecInstantiationPrimary(FieldDeclaration fd) {
