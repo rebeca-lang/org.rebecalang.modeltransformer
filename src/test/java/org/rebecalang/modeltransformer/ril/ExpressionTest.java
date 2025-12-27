@@ -42,8 +42,43 @@ public class ExpressionTest {
 	@Autowired
 	public ExceptionContainer exceptionContainer;
 	
-	protected Pair<RebecaModel, SymbolTable> compileModel(File model, Set<CompilerExtension> extension, CoreVersion coreVersion) {
-		return rebecaModelCompiler.compileRebecaFile(model, extension, coreVersion);
+	protected Pair<RebecaModel, SymbolTable> compileModel(String rebecaModel, Set<CompilerExtension> extension, CoreVersion coreVersion) throws IOException {
+		File rebecaFile = FileUtils.createTempFile(rebecaModel);
+		Pair<RebecaModel, SymbolTable> result = rebecaModelCompiler.compileRebecaFile(rebecaFile, extension, coreVersion);
+		Assertions.assertTrue(exceptionContainer.exceptionsIsEmpty(), "Model has the following compile errors:\r\n" + exceptionContainer);
+		rebecaFile.delete();
+		return result;
+	}
+
+	@Test
+	public void returnValueToArraysTest() throws IOException {
+		
+		String rebecaModel = 
+				"""
+				reactiveclass Test (2) {
+					msgsrv m1() {
+						int[2] x;
+						x[0] = f1();
+					}
+					int f1() {
+					}
+				}
+				main{}
+				""";
+		
+		Set<CompilerExtension> extension = new HashSet<CompilerExtension>();
+		Pair<RebecaModel, SymbolTable> compilationResult = 
+				compileModel(rebecaModel, extension, CoreVersion.CORE_2_2);
+		
+		RILModel transformModel = 
+				rebeca2RIL.transformModel(compilationResult, extension, CoreVersion.CORE_2_3);
+		
+		ArrayList<InstructionBean> instructionList = transformModel.getInstructionList("Test.m1");
+		InstructionBean instructionBean = instructionList.get(3);
+		
+		Assertions.assertEquals(MethodCallInstructionBean.class, instructionBean.getClass());
+		MethodCallInstructionBean mcib = (MethodCallInstructionBean) instructionBean;
+		Assertions.assertEquals("$TEMP_EXP$0", ((Variable)mcib.getFunctionCallResult()).getVarName());
 	}
 
 	@Test
@@ -55,7 +90,9 @@ public class ExpressionTest {
 					knownrebecs{Test t;}
 					Test(int a){}
 					msgsrv m1() {
+						int x;
 						return;
+						x = 10;
 					}
 					int f1() {
 						int a = 10;
@@ -65,11 +102,10 @@ public class ExpressionTest {
 				}
 				main{}
 				""";
-		File model = FileUtils.createTempFile(rebecaModel);
 		
 		Set<CompilerExtension> extension = new HashSet<CompilerExtension>();
 		Pair<RebecaModel, SymbolTable> compilationResult = 
-				compileModel(model, extension, CoreVersion.CORE_2_2);
+				compileModel(rebecaModel, extension, CoreVersion.CORE_2_2);
 		
 		RILModel transformModel = 
 				rebeca2RIL.transformModel(compilationResult, extension, CoreVersion.CORE_2_3);
@@ -79,7 +115,7 @@ public class ExpressionTest {
 		
 		Assertions.assertEquals(ReturnInstructionBean.class, instructionBean.getClass());
 		ReturnInstructionBean rib = (ReturnInstructionBean) instructionBean;
-		Assertions.assertEquals("$TEMP_EXP$17", ((Variable)rib.getReturnValue()).getVarName());
+		Assertions.assertEquals("$TEMP_EXP$0", ((Variable)rib.getReturnValue()).getVarName());
 	}
 
 	
@@ -102,11 +138,10 @@ public class ExpressionTest {
 				}
 				main{}
 				""";
-		File model = FileUtils.createTempFile(rebecaModel);
 		
 		Set<CompilerExtension> extension = new HashSet<CompilerExtension>();
 		Pair<RebecaModel, SymbolTable> compilationResult = 
-				compileModel(model, extension, CoreVersion.CORE_2_2);
+				compileModel(rebecaModel, extension, CoreVersion.CORE_2_2);
 		
 		RILModel transformModel = 
 				rebeca2RIL.transformModel(compilationResult, extension, CoreVersion.CORE_2_3);
@@ -139,11 +174,10 @@ public class ExpressionTest {
 				}
 				main{}
 				""";
-		File model = FileUtils.createTempFile(rebecaModel);
 		
 		Set<CompilerExtension> extension = new HashSet<CompilerExtension>();
 		Pair<RebecaModel, SymbolTable> compilationResult = 
-				compileModel(model, extension, CoreVersion.CORE_2_3);
+				compileModel(rebecaModel, extension, CoreVersion.CORE_2_3);
 		
 		RILModel transformModel = 
 				rebeca2RIL.transformModel(compilationResult, extension, CoreVersion.CORE_2_3);
@@ -170,11 +204,10 @@ public class ExpressionTest {
 				}
 				main{}
 				""";
-		File model = FileUtils.createTempFile(rebecaModel);
 		
 		Set<CompilerExtension> extension = new HashSet<CompilerExtension>();
 		Pair<RebecaModel, SymbolTable> compilationResult = 
-				compileModel(model, extension, CoreVersion.CORE_2_3);
+				compileModel(rebecaModel, extension, CoreVersion.CORE_2_3);
 		
 		RILModel transformModel = 
 				rebeca2RIL.transformModel(compilationResult, extension, CoreVersion.CORE_2_3);
@@ -203,11 +236,10 @@ public class ExpressionTest {
 				}
 				main{}
 				""";
-		File model = FileUtils.createTempFile(rebecaModel);
 		
 		Set<CompilerExtension> extension = new HashSet<CompilerExtension>();
 		Pair<RebecaModel, SymbolTable> compilationResult = 
-				compileModel(model, extension, CoreVersion.CORE_2_3);
+				compileModel(rebecaModel, extension, CoreVersion.CORE_2_3);
 		
 		RILModel transformModel = 
 				rebeca2RIL.transformModel(compilationResult, extension, CoreVersion.CORE_2_3);
@@ -247,11 +279,10 @@ public class ExpressionTest {
 					Test1 t2(t1):(4);
 				}
 				""";
-		File model = FileUtils.createTempFile(rebecaModel);
 		
 		Set<CompilerExtension> extension = new HashSet<CompilerExtension>();
 		Pair<RebecaModel, SymbolTable> compilationResult = 
-				compileModel(model, extension, CoreVersion.CORE_2_3);
+				compileModel(rebecaModel, extension, CoreVersion.CORE_2_3);
 		
 		RILModel transformModel = 
 				rebeca2RIL.transformModel(compilationResult, extension, CoreVersion.CORE_2_3);
@@ -283,11 +314,10 @@ public class ExpressionTest {
 					Test1 t2(t1):();
 				}
 				""";
-		File model = FileUtils.createTempFile(rebecaModel);
 		
 		Set<CompilerExtension> extension = new HashSet<CompilerExtension>();
 		Pair<RebecaModel, SymbolTable> compilationResult = 
-				compileModel(model, extension, CoreVersion.CORE_2_3);
+				compileModel(rebecaModel, extension, CoreVersion.CORE_2_3);
 		
 		RILModel transformModel = 
 				rebeca2RIL.transformModel(compilationResult, extension, CoreVersion.CORE_2_3);
@@ -308,11 +338,10 @@ public class ExpressionTest {
 				main{
 				}
 				""";
-		File model = FileUtils.createTempFile(rebecaModel);
 		
 		Set<CompilerExtension> extension = new HashSet<CompilerExtension>();
 		Pair<RebecaModel, SymbolTable> compilationResult = 
-				compileModel(model, extension, CoreVersion.CORE_2_3);
+				compileModel(rebecaModel, extension, CoreVersion.CORE_2_3);
 		
 		RILModel transformModel = 
 				rebeca2RIL.transformModel(compilationResult, extension, CoreVersion.CORE_2_3);
@@ -336,11 +365,10 @@ public class ExpressionTest {
 				main{
 				}
 				""";
-		File model = FileUtils.createTempFile(rebecaModel);
 		
 		Set<CompilerExtension> extension = new HashSet<CompilerExtension>();
 		Pair<RebecaModel, SymbolTable> compilationResult = 
-				compileModel(model, extension, CoreVersion.CORE_2_3);
+				compileModel(rebecaModel, extension, CoreVersion.CORE_2_3);
 		
 		RILModel transformModel = 
 				rebeca2RIL.transformModel(compilationResult, extension, CoreVersion.CORE_2_3);
@@ -362,11 +390,10 @@ public class ExpressionTest {
 				}
 				main{}
 				""";
-		File model = FileUtils.createTempFile(rebecaModel);
 		
 		Set<CompilerExtension> extension = new HashSet<CompilerExtension>();
 		Pair<RebecaModel, SymbolTable> compilationResult = 
-				compileModel(model, extension, CoreVersion.CORE_2_3);
+				compileModel(rebecaModel, extension, CoreVersion.CORE_2_3);
 		
 		RILModel transformModel = 
 				rebeca2RIL.transformModel(compilationResult, extension, CoreVersion.CORE_2_3);
@@ -385,18 +412,17 @@ public class ExpressionTest {
 		String rebecaModel = 
 				"""
 				env int[2] a = {20, 3};
-				reactiveclass Test1 (2) {
+				reactiveclass Test1(2) {
 					msgsrv a() {
 						int b = a[1];
 					}
 				}
 				main{}
 				""";
-		File model = FileUtils.createTempFile(rebecaModel);
 		
 		Set<CompilerExtension> extension = new HashSet<CompilerExtension>();
 		Pair<RebecaModel, SymbolTable> compilationResult = 
-				compileModel(model, extension, CoreVersion.CORE_2_3);
+				compileModel(rebecaModel, extension, CoreVersion.CORE_2_3);
 		
 		RILModel transformModel = 
 				rebeca2RIL.transformModel(compilationResult, extension, CoreVersion.CORE_2_3);

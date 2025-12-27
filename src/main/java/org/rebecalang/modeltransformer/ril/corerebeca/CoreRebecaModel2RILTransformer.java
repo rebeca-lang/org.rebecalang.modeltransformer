@@ -60,6 +60,7 @@ import org.rebecalang.modeltransformer.ril.corerebeca.translator.ForStatementTra
 import org.rebecalang.modeltransformer.ril.corerebeca.translator.ReturnStatementTranslator;
 import org.rebecalang.modeltransformer.ril.corerebeca.translator.SwitchStatementTranslator;
 import org.rebecalang.modeltransformer.ril.corerebeca.translator.WhileStatementTranslator;
+import org.rebecalang.modeltransformer.ril.corerebeca.translator.expressiontranslator.AbstractExpressionTranslator;
 import org.rebecalang.modeltransformer.ril.corerebeca.translator.expressiontranslator.BinaryExpressionTranslator;
 import org.rebecalang.modeltransformer.ril.corerebeca.translator.expressiontranslator.CastExpressionTranslator;
 import org.rebecalang.modeltransformer.ril.corerebeca.translator.expressiontranslator.DotPrimaryExpressionTranslator;
@@ -145,7 +146,7 @@ public class CoreRebecaModel2RILTransformer extends AbstractRILModelTransformer 
 		expressionTranslatorContainer.registerTranslator(TermPrimary.class,
 				(TermPrimaryExpressionTranslator)appContext.getBean("CORE_REBECA_TERM_PRIMARY", 
 						expressionTranslatorContainer));
-		
+		AbstractExpressionTranslator.resetTempVariableCounter();
 	}
 
 	@Override

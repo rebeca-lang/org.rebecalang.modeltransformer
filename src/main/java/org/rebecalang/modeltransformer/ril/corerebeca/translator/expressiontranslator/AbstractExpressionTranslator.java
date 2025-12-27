@@ -27,6 +27,10 @@ public abstract class AbstractExpressionTranslator {
 		return new Variable(TEMP_VAR_PREFIX + counter++);
 	}
 	
+	public static void resetTempVariableCounter() {
+		counter = 0;
+	}
+	
 	protected Rebeca2RILExpressionTranslatorContainer expressionTranslatorContainer;
 	
 	
