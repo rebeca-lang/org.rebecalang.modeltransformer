@@ -50,6 +50,38 @@ public class ExpressionTest {
 		return result;
 	}
 
+
+	@Test
+	public void conditionAndAssignmentForArrays() throws IOException {
+		
+		String rebecaModel = 
+				"""
+				reactiveclass Test (2) {
+					statevars{int[2] FTTimeout;}
+					msgsrv m1() {
+						int i = 4;
+						if (FTTimeout[i] >= 0  )
+							FTTimeout[i] = FTTimeout[i] -1 ;
+					}
+				}
+				main{}
+				""";
+		
+		Set<CompilerExtension> extension = new HashSet<CompilerExtension>();
+		Pair<RebecaModel, SymbolTable> compilationResult = 
+				compileModel(rebecaModel, extension, CoreVersion.CORE_2_2);
+		
+		RILModel transformModel = 
+				rebeca2RIL.transformModel(compilationResult, extension, CoreVersion.CORE_2_3);
+		
+		ArrayList<InstructionBean> instructionList = transformModel.getInstructionList("Test.m1");
+		InstructionBean instructionBean = instructionList.get(4);
+		
+		Assertions.assertEquals(AssignmentInstructionBean.class, instructionBean.getClass());
+		AssignmentInstructionBean aib = (AssignmentInstructionBean) instructionBean;
+		Assertions.assertEquals("FTTimeout", ((Variable)aib.getFirstOperand()).getVarName());
+	}
+		
 	@Test
 	public void returnValueToArraysTest() throws IOException {
 		

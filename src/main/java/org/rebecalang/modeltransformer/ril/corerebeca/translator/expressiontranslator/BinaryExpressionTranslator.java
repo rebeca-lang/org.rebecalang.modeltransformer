@@ -1,6 +1,9 @@
 package org.rebecalang.modeltransformer.ril.corerebeca.translator.expressiontranslator;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.BinaryExpression;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Expression;
@@ -18,6 +21,8 @@ import org.springframework.stereotype.Component;
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class BinaryExpressionTranslator extends AbstractExpressionTranslator {
 
+	private final static Set<String> assignmentOperators = new HashSet<String>(
+			Arrays.asList("+=", "-=", "*=", "/=", "%=", "&=", "|=", "="));
 
 	@Autowired
 	public BinaryExpressionTranslator(Rebeca2RILExpressionTranslatorContainer expressionTranslatorContainer) {
@@ -30,7 +35,7 @@ public class BinaryExpressionTranslator extends AbstractExpressionTranslator {
 		String operator = binaryExpression.getOperator();
 		Object leftSide = expressionTranslatorContainer.translate(binaryExpression.getLeft(), instructions);
 		Object rightSide = expressionTranslatorContainer.translate(binaryExpression.getRight(), instructions);
-		if (!operator.equals("==") && !operator.equals("!=") && operator.endsWith("=")) {
+		if (assignmentOperators.contains(operator)) {
 			AssignmentInstructionBean assignmentInstruction;
 			if (operator.equals("=")) {
 				assignmentInstruction = new AssignmentInstructionBean(leftSide, rightSide, null, null);
