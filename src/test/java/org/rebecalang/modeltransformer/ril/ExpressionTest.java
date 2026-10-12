@@ -321,11 +321,11 @@ public class ExpressionTest {
 		
 		ArrayList<InstructionBean> instructionList = transformModel.getInstructionList("main");
 		
-		InstructionBean firstInstance = instructionList.get(4);
+		InstructionBean firstInstance = instructionList.get(2);
 		Assertions.assertEquals(RebecInstantiationInstructionBean.class, 
 				firstInstance.getClass());
 		
-		InstructionBean secondInstance = instructionList.get(10);
+		InstructionBean secondInstance = instructionList.get(6);
 		Assertions.assertEquals(RebecInstantiationInstructionBean.class, 
 				secondInstance.getClass());
 	}
@@ -338,7 +338,7 @@ public class ExpressionTest {
 				reactiveclass Test1 (2) {
 					knownrebecs{Test1 t;}
 					msgsrv m1() {
-						t.m1();
+						self.t.m1();
 					}
 				}
 				main{

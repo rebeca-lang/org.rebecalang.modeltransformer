@@ -2,7 +2,6 @@ package org.rebecalang.modeltransformer.ril.corerebeca;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -50,7 +49,6 @@ import org.rebecalang.modeltransformer.ril.Rebeca2RILStatementTranslatorContaine
 import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.EndMethodInstructionBean;
 import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.EndMsgSrvInstructionBean;
 import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.InstructionBean;
-import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.RebecInstantiationInstructionBean;
 import org.rebecalang.modeltransformer.ril.corerebeca.translator.BlockStatementTranslator;
 import org.rebecalang.modeltransformer.ril.corerebeca.translator.BreakStatementTranslator;
 import org.rebecalang.modeltransformer.ril.corerebeca.translator.ConditionalStatementTranslator;
@@ -223,12 +221,12 @@ public class CoreRebecaModel2RILTransformer extends AbstractRILModelTransformer 
 			knownrebecsNames.put(rcd.getName(), extractKnownrebecsNames(rcd));
 		}
 		
-		BlockStatement blockStatement = new BlockStatement();
-		LinkedList<BinaryExpression> setBindingsInstructions = 
-				new LinkedList<BinaryExpression>();
+		ArrayList<InstructionBean> allInstructions = new ArrayList<InstructionBean>();
+		ArrayList<InstructionBean> constructorsInstructions = new ArrayList<InstructionBean>();
+		ArrayList<InstructionBean> bindingInstructions = new ArrayList<InstructionBean>();
+		statementTranslatorContainer.prepare(null, "main");
 		for(MainRebecDefinition mrd : rebecaModel.getRebecaCode().getMainDeclaration().getMainRebecDefinition()) {
 			FieldDeclaration fd = createFieldDeclaration(mrd);
-			blockStatement.getStatements().add(fd);
 
 			RebecInstantiationPrimary rip = getRebecInstantiationPrimary(fd);
 
@@ -237,12 +235,21 @@ public class CoreRebecaModel2RILTransformer extends AbstractRILModelTransformer 
 			rip.setType(mrd.getType());
 			rip.getAnnotations().addAll(mrd.getAnnotations());
 			rip.getArguments().addAll(mrd.getArguments());
+			
+			ArrayList<InstructionBean> tempInstructions = new ArrayList<InstructionBean>();
+			statementTranslatorContainer.translate(fd, tempInstructions);
+			allInstructions.add(tempInstructions.remove(0));
+			allInstructions.add(tempInstructions.remove(0));
+			allInstructions.add(tempInstructions.remove(0));
+			allInstructions.add(tempInstructions.remove(tempInstructions.size() - 1));
+			constructorsInstructions.addAll(tempInstructions);
+
 			for(int cnt = 0; cnt < mrd.getBindings().size(); cnt++) {
 				Expression binding = mrd.getBindings().get(cnt);
 				Type bindingType = binding.getType();
 				
 				BinaryExpression be = new BinaryExpression();
-				setBindingsInstructions.add(be);
+//				setBindingsInstructions.add(be);
 				be.setOperator("=");
 				be.setType(bindingType);
 				be.setRight(binding);
@@ -258,25 +265,12 @@ public class CoreRebecaModel2RILTransformer extends AbstractRILModelTransformer 
 				variable.setType(bindingType);
 				variable.setName(knownrebecsNames.get(mrd.getType().getTypeName()).get(cnt));
 				left.setRight(variable);
+				statementTranslatorContainer.translate(be, bindingInstructions);
 			}
 		}
-		blockStatement.getStatements().addAll(setBindingsInstructions);
-		ArrayList<InstructionBean> instructions = generateMethodRIL(null, "main", blockStatement);
-		ArrayList<InstructionBean> instantiationVariableDeclarations = new ArrayList<InstructionBean>();
-		instantiationVariableDeclarations.add(instructions.remove(0));
-		int cnt = 0;
-		while(true) {
-			if(cnt >= instructions.size())
-				break;
-			if(instructions.get(cnt) instanceof RebecInstantiationInstructionBean) {
-//				instantiationVariableDeclarations.add(instructions.remove(cnt - 1));
-				instantiationVariableDeclarations.add(instructions.remove(cnt - 2));
-//				cnt--;
-			} else
-				cnt++;
-		}
-		instantiationVariableDeclarations.addAll(instructions);
-		return instantiationVariableDeclarations;
+		allInstructions.addAll(bindingInstructions);
+		allInstructions.addAll(constructorsInstructions);
+		return allInstructions;
 	}
 
 	private RebecInstantiationPrimary getRebecInstantiationPrimary(FieldDeclaration fd) {

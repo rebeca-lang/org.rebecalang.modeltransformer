@@ -1,5 +1,7 @@
 package org.rebecalang.modeltransformer.ril;
 
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -8,12 +10,13 @@ import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.FormalParame
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.MethodDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.ReactiveClassDeclaration;
 import org.rebecalang.compiler.modelcompiler.corerebeca.objectmodel.Type;
+import org.rebecalang.modeltransformer.ril.corerebeca.rilinstruction.InstructionBean;
 
 public class RILUtilities {
 
 	public static String computeMethodName(String className, String methodName, List<Type> parametersTypes) {
 
-		String canonicalMethodName = className + "." + methodName;
+		String canonicalMethodName = (className == null ? "" : className + ".") + methodName;
 		canonicalMethodName += createListOfParameterTypes(parametersTypes);
 		return canonicalMethodName;
 	}
@@ -45,4 +48,16 @@ public class RILUtilities {
 				createListOfParameterTypes(castableMethodSpecification.getArgumentsTypes());
 	}
 
+	public static void exportMethodBodies(RILModel rilModel, OutputStream stream) {
+		PrintStream out = new PrintStream(stream);
+		
+		for(String methodName : rilModel.getMethodNames()) {
+			System.out.println(methodName);
+			int counter = 0;
+			for(InstructionBean instruction : rilModel.getInstructionList(methodName)) {
+				out.println("" + counter++ +":" + instruction);
+			}
+			out.println("...............................................");
+		}
+	}
 }

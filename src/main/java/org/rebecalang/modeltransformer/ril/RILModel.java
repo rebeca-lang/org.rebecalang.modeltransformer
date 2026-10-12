@@ -24,4 +24,19 @@ public class RILModel {
 	public ArrayList<InstructionBean> getInstructionList(String methodName) {
 		return transformedRILModel.get(methodName);
 	}
+	
+	public String toString() {
+		StringBuilder result = new StringBuilder();
+		for(String methodName : this.getMethodNames()) {
+			System.out.println(methodName);
+			int counter = 0;
+			for(InstructionBean instruction : this.getInstructionList(methodName)) {
+				result.append(counter++);
+				result.append(":");
+				result.append(instruction);
+				result.append("\r\n");
+			}
+		}
+		return result.toString();
+	}
 }

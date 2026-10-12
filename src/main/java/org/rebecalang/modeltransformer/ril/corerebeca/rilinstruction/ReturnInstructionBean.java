@@ -19,6 +19,6 @@ public class ReturnInstructionBean extends InstructionBean {
 	
 	@Override
 	public String toString() {
-		return " return " + (returnValue == null ? "" : returnValue);
+		return "return " + (returnValue == null ? "" : returnValue);
 	}
 }
